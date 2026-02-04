@@ -1,0 +1,247 @@
+/*
+  Stylesheet TP Play PRO
+  - Responsivo e acessível
+  - Claro/Escuro via preferência do sistema
+  - Foco em UX simples
+*/
+
+/* Variáveis de tema - restauração do tema claro anterior (tons suaves) */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f3f5f9;
+  --text: #111827;
+  --text-soft: #374151;
+  --primary: #2563eb; /* Azul anterior */
+  --primary-600: #1d4ed8;
+  --primary-700: #1e40af;
+  --accent: #10b981; /* Verde suave */
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --muted: #94a3b8;
+
+  --border: #e6e8ee;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow: 0 4px 12px rgba(0,0,0,0.09);
+  --shadow-lg: 0 12px 30px rgba(0,0,0,0.12);
+
+  --radius: 14px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  --success-gradient: linear-gradient(135deg, #22c55e, #16a34a);
+  --primary-gradient: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  --card-gradient: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,1));
+}
+
+/* Tema escuro mantém como aprovado pelo usuário */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f15;
+    --surface: #0f172a;
+    --surface-2: #0b1220;
+    --text: #e5e7eb;
+    --text-soft: #cbd5e1;
+    --primary: #60a5fa;
+    --primary-600: #3b82f6;
+    --primary-700: #2563eb;
+    --accent: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --success: #22c55e;
+    --muted: #64748b;
+
+    --border: #1f2937;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+    --shadow: 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 30px rgba(0,0,0,0.45);
+
+    --success-gradient: linear-gradient(135deg, #16a34a, #22c55e);
+    --primary-gradient: linear-gradient(135deg, #60a5fa, #2563eb);
+    --card-gradient: linear-gradient(180deg, rgba(17,24,39,0.9), rgba(17,24,39,1));
+  }
+}
+
+/* Reset básico */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* Hero */
+.hero-section {
+  text-align: center;
+  padding: 28px 16px 12px;
+}
+.logo {
+  width: 92px;
+  height: 92px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+.hero-section h1 {
+  margin: 14px 0 6px;
+  font-size: 28px;
+}
+.hero-description {
+  color: var(--text-soft);
+  margin: 0 0 12px;
+}
+
+/* Download principal */
+.download-section { margin-top: 10px; }
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--primary-gradient);
+  color: #fff;
+  text-decoration: none;
+  padding: 14px 22px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.download-link:hover { transform: translateY(-1px); filter: brightness(1.02); }
+.download-link:active { transform: translateY(0); filter: brightness(.98); }
+.download-note { color: var(--muted); font-size: .95rem; margin-top: 8px; }
+
+/* Seletor de dispositivo */
+.device-selector { margin: 28px 0 10px; text-align: center; }
+.device-selector h2 { margin-bottom: 6px; }
+.device-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.device-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background .15s ease, box-shadow .15s ease, transform .12s ease;
+}
+.device-button:hover { box-shadow: var(--shadow); }
+.device-button:active { transform: scale(0.98); }
+
+/* Cards/seções */
+.section-card {
+  background: var(--card-gradient);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin: 18px 0;
+  box-shadow: var(--shadow);
+}
+.section-card h2 { margin-top: 0; }
+
+/* Instruções e passos */
+.instructions p { margin: 8px 0; }
+.simple-steps { margin: 8px 0 0 20px; }
+.simple-steps li { margin-bottom: 6px; }
+
+/* Blocos de código com ícone de copiar integrado */
+.code-block { margin: 12px 0; }
+.code-display { display: flex; flex-direction: column; gap: 8px; }
+.code-label { color: var(--text-soft); font-weight: 600; }
+.code-highlight {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 12px 40px 12px 12px;
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1rem;
+  user-select: text;
+  overflow-x: auto;
+}
+.copy-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.05rem;
+  opacity: .85;
+  transition: opacity .15s ease, transform .12s ease;
+}
+.copy-icon:hover { opacity: 1; transform: translateY(-50%) scale(1.05); }
+.copy-icon:active { transform: translateY(-50%) scale(0.98); }
+
+/* Botões de tutorial */
+.tutorial-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.tutorial-button {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  transition: transform .12s ease, filter .12s ease;
+}
+.tutorial-button:hover { transform: translateY(-1px); filter: brightness(1.03); }
+.tutorial-button:active { transform: translateY(0); filter: brightness(.98); }
+
+/* Imagens */
+.image-responsive {
+  width: 100%;
+  max-width: 720px; /* limite em desktops/grandes */
+  height: auto;
+  display: block;
+  margin: 10px auto 0; /* centraliza */
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Alertas */
+.alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+
+/* Responsividade */
+@media (max-width: 520px) {
+  .logo { width: 80px; height: 80px; }
+  .hero-section h1 { font-size: 24px; }
+  .download-link { width: 100%; justify-content: center; }
+  .code-highlight { font-size: .95rem; }
+}
+
+/* Larguras maiores */
+@media (min-width: 1024px) {
+  .container { max-width: 1120px; }
+  .hero-section { padding: 36px 16px 16px; }
+  .hero-section h1 { font-size: 34px; }
+  .download-link { padding: 16px 26px; }
+}
+
+/* TVs / 4K */
+@media (min-width: 1600px) {
+  .container { max-width: 1280px; }
+  .hero-section h1 { font-size: 40px; }
+  .code-highlight { font-size: 1.05rem; }
+}

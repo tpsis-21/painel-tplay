@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= app ? 'Editar' : 'Novo' %> App - TPlay Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-main: #f8fafc;
+            --text-main: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --muted-text: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 20px;
+        }
+
+        .dark {
+            --bg-main: #020617;
+            --text-main: #f8fafc;
+            --card-bg: #0f172a;
+            --border-color: #1e293b;
+            --muted-text: #94a3b8;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .form-section { 
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            @apply p-6 md:p-10 shadow-xl mb-10 transition-all;
+            box-shadow: var(--shadow);
+        }
+
+        .label { 
+            @apply block text-sm font-bold mb-2.5 flex items-center gap-2;
+            color: var(--text-main);
+            opacity: 0.9;
+        }
+
+        .input { 
+            @apply w-full rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .text-muted {
+            color: var(--muted-text);
+        }
+
+        .theme-toggle {
+            @apply p-3 rounded-2xl transition-all border;
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Estilização Premium para Input File */
+        input[type="file"]::file-selector-button {
+            @apply mr-4 px-4 py-2 rounded-xl border-0 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all cursor-pointer;
+        }
+
+        .step-badge {
+            @apply w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center mr-4 text-lg font-black shadow-lg shadow-primary/20;
+        }
+
+        .dual-input-container {
+            @apply flex gap-3;
+        }
+        .dual-input-url {
+            @apply flex-1 relative;
+        }
+        .dual-input-upload {
+            @apply relative shrink-0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        function updateFileName(input, labelId) {
+            const label = document.getElementById(labelId);
+            if (input.files && input.files.length > 0) {
+                const fileName = input.files[0].name;
+                label.innerText = fileName.length > 10 ? fileName.substring(0, 8) + '...' : fileName;
+                // Opcional: Limpar o campo de URL se um arquivo for selecionado
+                const urlInput = input.closest('.dual-input-container').querySelector('input[type="url"]');
+                if (urlInput) urlInput.value = '';
+            } else {
+                label.innerText = 'Upload';
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen pb-20">
+    <nav class="border-b bg-card/50 backdrop-blur-md sticky top-0 z-40" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/painel" class="text-xl font-bold hover:text-primary transition-colors">
+                <i class="fas fa-arrow-left mr-2 text-sm"></i> Voltar ao Painel
+            </a>
+            <button onclick="toggleTheme()" class="theme-toggle" aria-label="Alternar Tema">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 mt-12">
+        <header class="mb-10">
+            <h1 class="text-3xl font-extrabold tracking-tight"><%= app ? 'Editar Aplicativo' : 'Criar Nova Landing Page' %></h1>
+            <p class="text-muted-foreground mt-2">Preencha os campos abaixo para gerar sua página profissional.</p>
+        </header>
+
+        <form action="/save" method="POST" enctype="multipart/form-data">
+            <% if (app) { %>
+                <input type="hidden" name="original_slug" value="<%= app.slug %>">
+                <input type="hidden" name="slug" value="<%= app.slug %>">
+            <% } %>
+
+            <!-- Seção 1: Identidade -->
+            <div class="form-section">
+                <h2 class="text-2xl font-black mb-8 flex items-center">
+                    <span class="step-badge">1</span>
+                    Identidade do App
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="col-span-full">
+                        <label class="label"><i class="fas fa-tag text-primary"></i> Nome do Aplicativo *</label>
+                        <input type="text" name="name" class="input" value="<%= app ? app.name : '' %>" required placeholder="Ex: TP Play PRO">
+                    </div>
+                    
+                    <div class="col-span-full">
+                        <div class="p-6 bg-primary/5 border border-primary/10 rounded-3xl flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-xl">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg">Visível na Loja (Home)</h4>
+                                    <p class="text-sm text-muted-foreground">Exibir este aplicativo na página inicial do site.</p>
+                                </div>
+                            </div>
+                            <select name="visibleOnHome" class="bg-card border border-border/50 rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-primary/20">
+                                <option value="true" <%= (app && app.visibleOnHome) ? 'selected' : '' %>>Sim, visível</option>
+                                <option value="false" <%= (app && !app.visibleOnHome) ? 'selected' : '' %>>Não, oculto</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Logo do App -->
+                    <div class="space-y-4 p-6 bg-muted/30 rounded-[2rem] border border-border/50">
+                        <label class="label"><i class="fas fa-image text-primary"></i> Logo do App</label>
+                        
+                        <div class="dual-input-container">
+                            <div class="dual-input-url">
+                                <input type="url" name="logo_url" class="input pr-12" placeholder="URL da Logo..." value="<%= (app && app.logo && !app.logo.startsWith('/uploads/')) ? app.logo : '' %>">
+                                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none opacity-30">
+                                    <i class="fas fa-link text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="dual-input-upload">
+                                <input type="file" name="logo_file" class="hidden" id="logo_file_input" onchange="updateFileName(this, 'logo_file_label')" accept="image/*">
+                                <button type="button" onclick="document.getElementById('logo_file_input').click()" class="h-full px-6 bg-primary/10 text-primary font-bold rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 whitespace-nowrap border border-primary/20">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span id="logo_file_label">Upload</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="logo" value="<%= app ? app.logo : '' %>">
+                        <% if (app && app.logo) { %>
+                            <div class="mt-4 flex items-center gap-4 p-4 bg-card rounded-2xl border border-border/50 shadow-sm">
+                                <img src="<%= app.logo %>" class="w-14 h-14 rounded-2xl object-contain bg-background shadow-sm border p-1">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold opacity-50 uppercase tracking-wider">Logo Atual</span>
+                                    <span class="text-sm font-medium truncate max-w-[150px]"><%= app.logo.startsWith('http') ? 'URL Externa' : app.logo.split('/').pop() %></span>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- APK / Download -->
+                    <div class="space-y-4 p-6 bg-muted/30 rounded-[2rem] border border-border/50">
+                        <label class="label"><i class="fas fa-file-download text-primary"></i> Arquivo APK (Download)</label>
+                        
+                        <div class="dual-input-container">
+                            <div class="dual-input-url">
+                                <input type="url" name="download_url" class="input pr-12" placeholder="URL do APK..." value="<%= (app && app.downloadUrl && !app.downloadUrl.startsWith('/uploads/')) ? app.downloadUrl : '' %>">
+                                <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none opacity-30">
+                                    <i class="fas fa-link text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="dual-input-upload">
+                                <input type="file" name="download_file" class="hidden" id="download_file_input" onchange="updateFileName(this, 'download_file_label')" accept=".apk">
+                                <button type="button" onclick="document.getElementById('download_file_input').click()" class="h-full px-6 bg-primary/10 text-primary font-bold rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 whitespace-nowrap border border-primary/20">
+                                    <i class="fas fa-file-download"></i>
+                                    <span id="download_file_label">Upload</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="downloadUrl" value="<%= app ? app.downloadUrl : '' %>">
+                        <% if (app && app.downloadUrl) { %>
+                            <div class="mt-4 flex items-center gap-4 p-4 bg-card rounded-2xl border border-border/50 shadow-sm">
+                                <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fas fa-file-code text-2xl"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold opacity-50 uppercase tracking-wider">Arquivo Atual</span>
+                                    <span class="text-sm font-medium truncate max-w-[150px]"><%= app.downloadUrl.startsWith('http') ? 'URL Externa' : app.downloadUrl.split('/').pop() %></span>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Instalação -->
+            <div class="form-section">
+                <h2 class="text-2xl font-black mb-8 flex items-center">
+                    <span class="step-badge">2</span>
+                    Métodos de Instalação
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-orange-500/5 border border-orange-500/10 rounded-3xl">
+                        <label class="label text-orange-600 dark:text-orange-400">
+                            <i class="fas fa-fire"></i> Código Downloader
+                        </label>
+                        <input type="text" name="firestickCode" class="input !border-orange-500/20 focus:!border-orange-500" value="<%= app ? app.firestickCode : '' %>" required placeholder="Ex: 2787533">
+                    </div>
+                    <div class="p-6 bg-blue-500/5 border border-blue-500/10 rounded-3xl">
+                        <label class="label text-blue-600 dark:text-blue-400">
+                            <i class="fas fa-box"></i> Código NTDown
+                        </label>
+                        <input type="text" name="tvboxCode" class="input !border-blue-500/20 focus:!border-blue-500" value="<%= app ? app.tvboxCode : '' %>" placeholder="Ex: 51412">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 3: Tutoriais -->
+            <div class="form-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-black flex items-center">
+                        <span class="step-badge">3</span>
+                        Tutoriais de Uso
+                    </h2>
+                    <button type="button" onclick="addTutorial()" class="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2.5 rounded-2xl font-bold transition-all flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Novo Tutorial
+                    </button>
+                </div>
+                
+                <div id="tutorials-container" class="space-y-6">
+                    <% if (app && app.tutorials && app.tutorials.length > 0) { %>
+                        <% app.tutorials.forEach((tut, index) => { %>
+                            <div class="relative p-6 bg-muted/20 rounded-[2rem] border border-border/50 group hover:border-primary/30 transition-all">
+                                <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-3 -right-3 w-10 h-10 bg-destructive text-destructive-foreground rounded-2xl shadow-lg flex items-center justify-center hover:scale-110 transition-transform opacity-0 group-hover:opacity-100">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                    <div class="md:col-span-3">
+                                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Título</label>
+                                        <input type="text" name="tutorial_titles" class="input !py-2.5 text-sm" placeholder="Ex: Instalação na TV" value="<%= tut.title %>">
+                                    </div>
+                                    <div class="md:col-span-5">
+                                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Vídeo ou Link</label>
+                                        <div class="dual-input-container">
+                                            <div class="dual-input-url">
+                                                <input type="url" name="tutorial_urls" class="input !py-2.5 text-sm pr-10" placeholder="https://..." value="<%= (tut.url && !tut.url.startsWith('/uploads/')) ? tut.url : '' %>">
+                                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-30">
+                                                    <i class="fas fa-link text-[10px]"></i>
+                                                </div>
+                                            </div>
+                                            <div class="dual-input-upload">
+                                                <input type="file" name="video_tutorials" class="hidden" id="video_edit_${index}" onchange="updateFileName(this, 'label_edit_${index}')" accept="video/*">
+                                                <button type="button" onclick="document.getElementById('video_edit_${index}').click()" class="h-full px-4 bg-primary/10 text-primary font-bold rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 whitespace-nowrap border border-primary/20 text-xs">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                    <span id="label_edit_${index}"><%= (tut.url && tut.url.startsWith('/uploads/')) ? 'Trocar Vídeo' : 'Upload' %></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <% if (tut.url && tut.url.startsWith('/uploads/')) { %>
+                                            <p class="text-[10px] text-primary mt-2 font-bold truncate px-2"><i class="fas fa-check-circle mr-1"></i>Vídeo: <%= tut.url.split('-').pop() %></p>
+                                        <% } %>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Tipo</label>
+                                        <select name="tutorial_is_video" class="input !py-2.5 text-sm appearance-none bg-no-repeat bg-[right_1rem_center] cursor-pointer">
+                                            <option value="true" <%= tut.is_video ? 'selected' : '' %>>Vídeo (Player)</option>
+                                            <option value="false" <%= !tut.is_video ? 'selected' : '' %>>Link (Botão)</option>
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest text-center">Ícone</label>
+                                        <input type="text" name="tutorial_icons" class="input !py-2.5 text-sm text-center" placeholder="🎬" value="<%= tut.icon %>">
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Seção 4: Interface -->
+            <div class="form-section">
+                <h2 class="text-2xl font-black mb-8 flex items-center">
+                    <span class="step-badge">4</span>
+                    Interface do App
+                </h2>
+                <div class="space-y-8">
+                    <div class="p-8 bg-primary/5 border-2 border-dashed border-primary/20 rounded-[2rem] text-center group hover:border-primary/40 transition-all">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-primary/40 mb-4 group-hover:scale-110 transition-transform block"></i>
+                        <label class="text-sm font-bold text-muted-foreground mb-4 block">Selecione até 10 fotos da interface</label>
+                        <input type="file" name="interface_images" class="input max-w-xs mx-auto" multiple accept="image/*">
+                    </div>
+
+                    <% if (app && app.interface_images && app.interface_images.length > 0) { %>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                            <% app.interface_images.forEach(img => { %>
+                                <% const imgName = img.split('/').pop(); %>
+                                <div class="group relative aspect-video rounded-3xl overflow-hidden border border-border/50 bg-muted/20">
+                                    <img src="<%= img %>" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center backdrop-blur-[2px]">
+                                        <a href="/delete-image/<%= app.slug %>/<%= imgName %>" 
+                                           class="w-12 h-12 rounded-2xl bg-destructive text-destructive-foreground flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-2xl"
+                                           onclick="return confirm('Excluir esta imagem?')">
+                                            <i class="fas fa-trash-alt text-lg"></i>
+                                        </a>
+                                    </div>
+                                    <input type="hidden" name="existing_interface_images" value="<%= img %>">
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <button type="submit" class="group w-full py-6 bg-primary text-primary-foreground rounded-[2.5rem] font-black text-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 active:scale-[0.98] transition-all relative overflow-hidden">
+                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="relative flex items-center justify-center gap-3">
+                    <i class="fas fa-rocket text-xl group-hover:rotate-12 transition-transform"></i> 
+                    Salvar e Publicar Landing Page
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function addTutorial() {
+            const container = document.getElementById('tutorials-container');
+            const id = Date.now();
+            const div = document.createElement('div');
+            div.className = 'relative p-6 bg-muted/20 rounded-[2rem] border border-border/50 group hover:border-primary/30 transition-all animate-in fade-in slide-in-from-top-4 duration-500';
+            div.innerHTML = `
+                <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-3 -right-3 w-10 h-10 bg-destructive text-destructive-foreground rounded-2xl shadow-lg flex items-center justify-center hover:scale-110 transition-transform opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div class="md:col-span-3">
+                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Título</label>
+                        <input type="text" name="tutorial_titles" class="input !py-2.5 text-sm" placeholder="Ex: Instalação na TV">
+                    </div>
+                    <div class="md:col-span-5">
+                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Vídeo ou Link</label>
+                        <div class="dual-input-container">
+                            <div class="dual-input-url">
+                                <input type="url" name="tutorial_urls" class="input !py-2.5 text-sm pr-10" placeholder="https://...">
+                                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-30">
+                                    <i class="fas fa-link text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div class="dual-input-upload">
+                                <input type="file" name="video_tutorials" class="hidden" id="video_${id}" onchange="updateFileName(this, 'label_${id}')" accept="video/*">
+                                <button type="button" onclick="document.getElementById('video_${id}').click()" class="h-full px-4 bg-primary/10 text-primary font-bold rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 whitespace-nowrap border border-primary/20 text-xs">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span id="label_${id}">Upload</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest">Tipo</label>
+                        <select name="tutorial_is_video" class="input !py-2.5 text-sm appearance-none bg-no-repeat bg-[right_1rem_center] cursor-pointer">
+                            <option value="true">Vídeo (Player)</option>
+                            <option value="false">Link (Botão)</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] uppercase font-black text-muted-foreground mb-1.5 ml-1 block tracking-widest text-center">Ícone</label>
+                        <input type="text" name="tutorial_icons" class="input !py-2.5 text-sm text-center" placeholder="🎬" value="🎬">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Carregar tema salvo ou preferência do sistema
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Adicionar um tutorial vazio se estiver criando novo
+        <% if (!app) { %>
+            window.onload = addTutorial;
+        <% } %>
+    </script>
+</body>
+</html>

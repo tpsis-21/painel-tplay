@@ -1,0 +1,9 @@
+node_modules
+.env
+public/uploads/*
+!public/uploads/.gitkeep
+public/apps/*
+!public/apps/.gitkeep
+src/data/apps.json
+.DS_Store
+Thumbs.db
