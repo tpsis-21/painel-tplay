@@ -1,16 +1,17 @@
-# Configuração para Node.js na Hospedagem Compartilhada Hostinger
-# Este arquivo deve ser colocado na pasta 'public_html' ou na pasta onde o domínio aponta
+# Configuração para Node.js Selector Hostinger
+# Este arquivo deve estar na raiz do domínio
 
 RewriteEngine On
 
-# 1. Forçar HTTPS (Opcional, mas recomendado)
+# 1. Forçar HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# 2. Redirecionar todas as requisições para o Node.js
-# Certifique-se de que o Node.js Selector está configurado no painel da Hostinger
-# e apontando para o arquivo principal (ex: src/server.js)
-RewriteRule ^$ http://127.0.0.1:3000/ [P,L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+# 2. Ignorar arquivos físicos e diretórios
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 3. Redirecionar tudo para o Node.js (via Passenger/NodeSelector)
+# O Hostinger Node Selector normalmente já cuida disso, mas se não funcionar:
+# RewriteRule ^(.*)$ app.js/$1 [L]

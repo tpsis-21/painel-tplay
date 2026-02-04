@@ -1,11 +1,14 @@
 {
-  "name": "paginas-de-app",
+  "name": "painel-tplay",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/server.js",
+  "description": "Painel de Ajuda TopPlay - Express Application",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "start": "node src/server.js",
-    "postinstall": "node -e \"const fs=require('fs'); ['public/uploads', 'public/apps', 'src/data'].forEach(d => !fs.existsSync(d) && fs.mkdirSync(d, {recursive:true}))\"",
+    "start": "node app.js",
+    "postinstall": "node -e \"const fs=require('fs'); ['public/uploads', 'public/apps', 'data'].forEach(d => !fs.existsSync(d) && fs.mkdirSync(d, {recursive:true}))\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

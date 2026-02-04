@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const slugify = require('slugify');
 const multer = require('multer');
+const ejs = require('ejs');
 
 const app = express();
 // Hostinger Shared Hosting Node.js Selector usually looks for a file like 'app.js' or 'index.js'
@@ -14,13 +15,13 @@ const HOST = '127.0.0.1'; // Essential for some shared hosting environments
 const BASE_URL = process.env.BASE_URL || 'https://ajuda.tplay21.in';
 
 // --- CONFIGURAÇÃO DE DIRETÓRIOS (CAMINHOS ABSOLUTOS) ---
-const ROOT_DIR = path.join(__dirname, '..');
+const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 const APPS_DIR = path.join(PUBLIC_DIR, 'apps');
-const DATA_FILE = path.join(__dirname, 'data', 'apps.json');
-const VIEWS_DIR = path.join(__dirname, 'views');
-const TEMPLATES_DIR = path.join(__dirname, 'templates');
+const DATA_FILE = path.join(ROOT_DIR, 'data', 'apps.json');
+const VIEWS_DIR = path.join(ROOT_DIR, 'views');
+const TEMPLATES_DIR = path.join(ROOT_DIR, 'templates');
 
 // Garantir que os diretórios necessários existam
 fs.ensureDirSync(UPLOADS_DIR);
@@ -60,12 +61,19 @@ app.get('/:slug', (req, res, next) => {
     const reserved = ['painel', 'tutorial', 'new', 'save', 'edit', 'delete', 'uploads', 'apps', 'delete-image', 'favicon.ico'];
     if (reserved.includes(slug)) return next();
 
-    const appFilePath = path.join(APPS_DIR, slug, 'index.html');
-    if (fs.existsSync(appFilePath)) {
-        res.sendFile(appFilePath);
-    } else {
-        next();
+    // Prioridade: Tenta achar o app no banco de dados e renderizar dinamicamente
+    const apps = fs.readJsonSync(DATA_FILE);
+    const appData = apps.find(a => a.slug === slug);
+
+    if (appData) {
+        // Se o app existe no banco, renderiza usando o template
+        // Nota: Você pode optar por servir o index.html gerado se preferir performance
+        const appFilePath = path.join(APPS_DIR, slug, 'index.html');
+        if (fs.existsSync(appFilePath)) {
+            return res.sendFile(appFilePath);
+        }
     }
+    next();
 });
 
 app.get('/', (req, res) => {
@@ -171,7 +179,7 @@ app.post('/save', upload.fields([
             apps.push(appData);
         }
         fs.writeJsonSync(DATA_FILE, apps);
-        await generateAppPage(appData);
+        await rebuildAll();
         res.redirect('/painel');
     } catch (error) {
         console.error(error);
@@ -207,7 +215,54 @@ app.get('/delete-image/:slug/:imgName', (req, res) => {
     res.redirect(`/edit/${slug}`);
 });
 
-// --- FUNÇÃO GERADORA DE PÁGINAS ---
+// --- FUNÇÕES GERADORAS DE PÁGINAS ESTÁTICAS (SSG) ---
+
+async function generateHomePage() {
+    try {
+        const apps = fs.readJsonSync(DATA_FILE);
+        const visibleApps = apps.filter(app => app.visibleOnHome);
+        const html = await ejs.renderFile(path.join(VIEWS_DIR, 'store.ejs'), { apps: visibleApps });
+        await fs.writeFile(path.join(PUBLIC_DIR, 'index.html'), html);
+        console.log('✅ Home page gerada com sucesso!');
+    } catch (error) {
+        console.error('❌ Erro ao gerar Home page:', error);
+    }
+}
+
+async function generateTutorialsPage() {
+    try {
+        const apps = fs.readJsonSync(DATA_FILE);
+        const allVideoTutorials = [];
+        apps.forEach(app => {
+            if (app.tutorials) {
+                app.tutorials.forEach(tut => {
+                    if (tut.is_video) {
+                        allVideoTutorials.push({ ...tut, appName: app.name, appSlug: app.slug });
+                    }
+                });
+            }
+        });
+        const html = await ejs.renderFile(path.join(VIEWS_DIR, 'tutorials.ejs'), { tutorials: allVideoTutorials });
+        const tutorialDir = path.join(PUBLIC_DIR, 'tutorial');
+        await fs.ensureDir(tutorialDir);
+        await fs.writeFile(path.join(tutorialDir, 'index.html'), html);
+        console.log('✅ Página de tutoriais gerada com sucesso!');
+    } catch (error) {
+        console.error('❌ Erro ao gerar página de tutoriais:', error);
+    }
+}
+
+async function rebuildAll() {
+    console.log('🔄 Iniciando reconstrução total do site estático...');
+    await generateHomePage();
+    await generateTutorialsPage();
+    
+    const apps = fs.readJsonSync(DATA_FILE);
+    for (const appData of apps) {
+        await generateAppPage(appData);
+    }
+    console.log('✨ Reconstrução concluída!');
+}
 
 async function generateAppPage(appData) {
     const templateHtmlPath = path.join(TEMPLATES_DIR, 'base.html');
@@ -289,6 +344,22 @@ async function generateAppPage(appData) {
     await fs.writeFile(path.join(appDir, 'styles.css'), templateCss);
 }
 
-app.listen(PORT, HOST, () => {
-    console.log(`Servidor rodando em http://${HOST}:${PORT}`);
-});
+// --- INICIALIZAÇÃO DO SERVIDOR ---
+
+if (require.main === module) {
+    if (process.argv.includes('--build')) {
+        rebuildAll().then(() => {
+            console.log('🚀 Build estático finalizado.');
+            process.exit(0);
+        }).catch(err => {
+            console.error('❌ Erro no build:', err);
+            process.exit(1);
+        });
+    } else {
+        app.listen(PORT, HOST, async () => {
+            console.log(`Servidor rodando em http://${HOST}:${PORT}`);
+        });
+    }
+}
+
+module.exports = app;
