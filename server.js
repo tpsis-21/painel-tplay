@@ -362,63 +362,41 @@ async function generateAppPage(appData) {
         }
     }
 
-    // Tutoriais e Vídeos
-    let tutorialsHtml = '';
-    let videoSectionHtml = '';
-    let hasVideos = false;
-    let hasLinks = false;
-    
+    const replaceContainerInner = (html, id, content) => {
+        const rx = new RegExp(`(<div\\s+id="${id}"[\\s\\S]*?>)[\\s\\S]*?(<\\/div>)`);
+        return html.replace(rx, `$1${content}$2`);
+    };
+    let videosHtml = '';
+    let linksHtml = '';
     if (appData.tutorials && appData.tutorials.length > 0) {
         appData.tutorials.forEach((tut) => {
             if (tut.is_video) {
-                hasVideos = true;
-                videoSectionHtml += `
-                <div class="video-card">
-                    <h3>${tut.icon} ${tut.title}</h3>
-                    <div class="video-wrapper">
-                        <video controls preload="metadata"><source src="${tut.url}" type="video/mp4">Seu navegador não suporta vídeos.</video>
-                    </div>
+                videosHtml += `
+                <div class="bg-muted rounded-lg aspect-video flex items-center justify-center relative overflow-hidden">
+                    <video controls preload="metadata" class="w-full h-full object-cover"><source src="${tut.url}" type="video/mp4"></video>
                 </div>`;
             } else {
-                hasLinks = true;
-                tutorialsHtml += `<a class="tutorial-button" href="${tut.url}" target="_blank" rel="noopener noreferrer">${tut.icon} ${tut.title}</a>\n`;
+                linksHtml += `
+                <a href="${tut.url}" target="_blank" rel="noopener noreferrer" class="bg-muted rounded-lg p-4 flex items-center hover:bg-accent transition-colors">
+                    <span class="mr-3">${tut.icon}</span>
+                    <span class="font-medium">${tut.title}</span>
+                </a>`;
             }
         });
     }
-    
-    if (hasVideos) {
-        finalHtml = finalHtml.replace('id="video-tutorials-section" class="section-card tutorial-section" style="display: none;"', 'id="video-tutorials-section" class="section-card tutorial-section" style="display: block;"');
-        finalHtml = finalHtml.replace('<div id="video-grid-placeholder"></div>', `<div class="video-grid">${videoSectionHtml}</div>`);
+    if (videosHtml) {
+        finalHtml = replaceContainerInner(finalHtml, 'video-grid', videosHtml);
     }
-
-    if (hasLinks) {
-        finalHtml = finalHtml.replace('id="links-tutorials-section" class="section-card tutorial-section" style="display: none;"', 'id="links-tutorials-section" class="section-card tutorial-section" style="display: block;"');
-        finalHtml = finalHtml.replace('<div class="tutorial-buttons" id="links-grid-placeholder">', `<div class="tutorial-buttons" id="links-grid-placeholder">${tutorialsHtml}`);
+    if (linksHtml) {
+        finalHtml = replaceContainerInner(finalHtml, 'links-grid', linksHtml);
     }
-
-    // Carrossel de Imagens
     if (appData.interface_images && appData.interface_images.length > 0) {
-        let carouselHtml = `
-        <h2 id="interface" style="text-align:center; margin-top:0; margin-bottom:20px;">🖥️ Interface do App</h2>
-        <div class="carousel-container" style="position: relative; max-width: 100%; overflow: hidden; margin: 0 auto; border-radius: 1.25rem;">
-            <div class="carousel-images" style="display: flex; transition: transform 0.5s ease-in-out;">
-                ${appData.interface_images.map(img => `<img src="${img}" style="width: 100%; flex-shrink: 0;" alt="Interface ${appData.name}">`).join('')}
+        const imagesHtml = appData.interface_images.map(img => `
+            <div class="bg-muted rounded-lg aspect-video overflow-hidden">
+                <img src="${img}" alt="Interface ${appData.name}" class="w-full h-full object-cover" loading="lazy" decoding="async">
             </div>
-            <button class="carousel-btn prev" onclick="moveCarousel(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; cursor: pointer; border-radius: 50%; z-index: 10;">&#10094;</button>
-            <button class="carousel-btn next" onclick="moveCarousel(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; width: 40px; height: 40px; cursor: pointer; border-radius: 50%; z-index: 10;">&#10095;</button>
-        </div>
-        <script>
-            let currentIndex = 0;
-            function moveCarousel(direction) {
-                const images = document.querySelector('.carousel-images');
-                if (!images) return;
-                const total = images.children.length;
-                currentIndex = (currentIndex + direction + total) % total;
-                images.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
-            }
-        </script>`;
-        finalHtml = finalHtml.replace('id="interface-placeholder" class="section-card" style="display: none;"', 'id="interface-placeholder" class="section-card" style="display: block;"');
-        finalHtml = finalHtml.replace('<div id="interface-placeholder" class="section-card" style="display: block;"></div>', `<div id="interface-placeholder" class="section-card" style="display: block;">${carouselHtml}</div>`);
+        `).join('');
+        finalHtml = replaceContainerInner(finalHtml, 'interface-grid', imagesHtml);
     }
 
     const appDir = path.join(APPS_DIR, appData.slug);
