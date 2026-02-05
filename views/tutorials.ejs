@@ -13,8 +13,14 @@
                 extend: {
                     colors: {
                         primary: '#2563eb',
+                        'primary-hover': '#1d4ed8',
                         dark: '#0f172a',
-                    }
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
                 }
             }
         }
@@ -28,6 +34,9 @@
             --card-bg: #ffffff;
             --border-color: #e2e8f0;
             --muted-text: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --radius: 24px;
         }
 
         .dark {
@@ -74,12 +83,34 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         
         .glass:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 0;
+        }
+
+        .glass:hover::before {
+            opacity: 0.05;
+        }
+
+        .glass > * {
+            position: relative;
+            z-index: 1;
         }
 
         .text-muted { color: var(--muted-text); }

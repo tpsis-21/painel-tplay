@@ -10,7 +10,7 @@ const ejs = require('ejs');
 const app = express();
 // Hostinger Shared Hosting Node.js Selector usually looks for a file like 'app.js' or 'index.js'
 // and the server should be exported or started.
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const HOST = '127.0.0.1'; // Essential for some shared hosting environments
 const BASE_URL = process.env.BASE_URL || 'https://ajuda.tplay21.in';
 
@@ -49,6 +49,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // --- CONFIGURAÇÕES EXPRESS ---
+app.set('port', PORT);
 app.set('view engine', 'ejs');
 app.set('views', VIEWS_DIR);
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -139,10 +140,41 @@ app.post('/save', upload.fields([
         if (req.files['logo_file']) appData.logo = '/uploads/' + req.files['logo_file'][0].filename;
         if (req.files['download_file']) appData.downloadUrl = '/uploads/' + req.files['download_file'][0].filename;
 
+        // Compatibilidade de dispositivos (painel)
+        const devicesField = req.body.devices;
+        const allDevicesDefault = ['android','androidtv','firestick','tvbox'];
+        appData.compatibleDevices = Array.isArray(devicesField) ? devicesField : (devicesField ? [devicesField] : allDevicesDefault);
+
+        // Código NTDown (TV Box) - compatibilidade retroativa
+        appData.ntdownCode = appData.ntdownCode || appData.tvboxCode || '';
+
         let interfaceImages = [];
         if (appData.existing_interface_images) {
             interfaceImages = Array.isArray(appData.existing_interface_images) ? appData.existing_interface_images : [appData.existing_interface_images];
         }
+
+        // Lógica de exclusão de imagens
+        if (appData.deleted_images) {
+            const imagesToDelete = Array.isArray(appData.deleted_images) ? appData.deleted_images : [appData.deleted_images];
+            
+            // Filtrar a lista de imagens existentes para remover as deletadas
+            interfaceImages = interfaceImages.filter(imgUrl => !imagesToDelete.includes(imgUrl));
+
+            // Excluir os arquivos físicos
+            imagesToDelete.forEach(imgUrl => {
+                try {
+                    const filename = path.basename(imgUrl);
+                    const imagePath = path.join(UPLOADS_DIR, filename);
+                    if (fs.existsSync(imagePath)) {
+                        fs.unlinkSync(imagePath);
+                        console.log(`Arquivo de imagem deletado: ${imagePath}`);
+                    }
+                } catch (err) {
+                    console.error(`Erro ao deletar o arquivo de imagem ${imgUrl}:`, err);
+                }
+            });
+        }
+
         if (req.files['interface_images']) {
             req.files['interface_images'].forEach(file => interfaceImages.push('/uploads/' + file.filename));
         }
@@ -277,7 +309,46 @@ async function generateAppPage(appData) {
         .replace(/{{app_url}}/g, `${BASE_URL}/${appData.slug}`)
         .replace(/{{android_code}}/g, appData.firestickCode || '2787533')
         .replace(/{{firestick_code}}/g, appData.firestickCode || '2787533')
-        .replace(/{{tvbox_code}}/g, appData.tvboxCode || '51412');
+        .replace(/{{tvbox_code}}/g, appData.tvboxCode || '51412')
+        .replace(/{{NtdownCode}}/g, appData.ntdownCode || appData.tvboxCode || '51412');
+
+    // Dispositivo padrão
+    const devicesList = Array.isArray(appData.compatibleDevices) && appData.compatibleDevices.length > 0
+        ? appData.compatibleDevices
+        : ['android','androidtv','firestick','tvbox'];
+    const defaultDeviceId = `${devicesList[0]}-section`;
+    finalHtml = finalHtml.replace(/{{default_device}}/g, defaultDeviceId);
+
+    // Texto de compatibilidade e descrição
+    const labels = {
+        android: 'Celular Android',
+        androidtv: 'Android TV / Mi Stick',
+        firestick: 'Fire Stick',
+        tvbox: 'TV Box / Receptores / Projetores'
+    };
+    const compatItems = devicesList.map(d => labels[d]).filter(Boolean);
+    const compatText = compatItems.length > 1
+        ? compatItems.slice(0, -1).join(', ') + ' e ' + compatItems.slice(-1)
+        : (compatItems[0] || 'Android');
+    const appDesc = (appData.description && appData.description.trim())
+        ? appData.description.trim()
+        : `${appData.name} — Instalação rápida e segura para ${compatText}.`;
+    finalHtml = finalHtml
+        .replace(/{{compat_text}}/g, compatText)
+        .replace(/{{app_description}}/g, appDesc)
+        .replace(/{{meta_description}}/g, appDesc);
+
+    // Remover botões/Seções de dispositivos não compatíveis
+    const allDevices = ['android','androidtv','firestick','tvbox'];
+    for (const dev of allDevices) {
+        if (!devicesList.includes(dev)) {
+            const sectionId = `${dev}-section`;
+            const buttonRegex = new RegExp(`<button[\\s\\S]*?data-target="${sectionId}"[\\s\\S]*?<\\/button>`, 'g');
+            const sectionRegex = new RegExp(`<section[\\s\\S]*?id="${sectionId}"[\\s\\S]*?<\\/section>`, 'g');
+            finalHtml = finalHtml.replace(buttonRegex, '');
+            finalHtml = finalHtml.replace(sectionRegex, '');
+        }
+    }
 
     // Tutoriais e Vídeos
     let tutorialsHtml = '';
@@ -363,3 +434,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports.rebuildAll = rebuildAll;

@@ -1,9 +1,9 @@
 const app = require('./server');
-const PORT = process.env.PORT || 3000;
+const findFreePort = require('find-free-port');
 
-// O Node.js Selector da Hostinger espera que o servidor seja iniciado
-// e muitas vezes injeta a variável PORT ou usa um socket Unix.
-
-app.listen(PORT, () => {
-    console.log(`Servidor iniciado na porta ${PORT}`);
+findFreePort(3000, (err, freePort) => {
+    if (err) throw err;
+    app.listen(freePort, () => {
+        console.log(`Servidor iniciado na porta ${freePort}`);
+    });
 });

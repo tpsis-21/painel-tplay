@@ -8,7 +8,7 @@
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
   --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --radius: 20px;
+  --radius: 24px;
 }
 
 .dark {
@@ -124,7 +124,7 @@ body {
 .section-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 32px;
+  border-radius: var(--radius);
   padding: 32px;
   margin: 24px 0;
   box-shadow: var(--shadow);
@@ -194,9 +194,9 @@ ol.simple-steps li { margin-bottom: 12px; font-weight: 500; }
     margin-top: 20px;
 }
 .video-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     padding: 16px;
     box-shadow: var(--shadow);
 }
@@ -206,7 +206,7 @@ ol.simple-steps li { margin-bottom: 12px; font-weight: 500; }
     padding-bottom: 56.25%; /* 16:9 */
     height: 0;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #000;
 }
 .video-wrapper video {
@@ -219,9 +219,9 @@ ol.simple-steps li { margin-bottom: 12px; font-weight: 500; }
 
 /* Carrossel */
 .carousel-container {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
 }
 
 /* Botão de Tema */
@@ -236,7 +236,7 @@ ol.simple-steps li { margin-bottom: 12px; font-weight: 500; }
     color: #fff;
     border: none;
     cursor: pointer;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -259,17 +259,16 @@ ol.simple-steps li { margin-bottom: 12px; font-weight: 500; }
     align-items: center;
     gap: 8px;
     padding: 14px 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    color: var(--text);
+    color: var(--text-main);
     text-decoration: none;
     font-weight: 700;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow);
     transition: all 0.2s ease;
 }
 .tutorial-button:hover {
-    background: var(--surface-2);
     border-color: var(--primary);
     transform: translateY(-2px);
     box-shadow: var(--shadow);

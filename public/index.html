@@ -41,8 +41,14 @@
                 extend: {
                     colors: {
                         primary: '#2563eb',
+                        'primary-hover': '#1d4ed8',
                         dark: '#0f172a',
-                    }
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
                 }
             }
         }
@@ -56,6 +62,9 @@
             --card-bg: #ffffff;
             --border-color: #e2e8f0;
             --muted-text: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --radius: 24px;
         }
 
         .dark {
@@ -105,12 +114,34 @@
         .app-card { 
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
         
         .app-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 0;
+        }
+
+        .app-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .app-card > * {
+            position: relative;
+            z-index: 1;
         }
 
         .text-muted { color: var(--muted-text); }
@@ -166,10 +197,20 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-                <div class="col-span-full py-20 text-center opacity-50">
-                    <i class="fas fa-ghost text-5xl mb-4"></i>
-                    <p class="text-xl font-bold">Nenhum app disponível no momento.</p>
-                </div>
+                
+                    <div class="app-card p-8 rounded-[2.5rem] flex flex-col">
+                        <div class="w-24 h-24 mx-auto mb-8 bg-slate-100 dark:bg-slate-800 rounded-3xl p-4 shadow-inner">
+                            <img src="/uploads/acess-play-logo-982497.png" alt="Acess Play" class="w-full h-full object-contain rounded-xl">
+                        </div>
+                        <h3 class="text-2xl font-black text-center mb-4">Acess Play</h3>
+                        <p class="text-muted text-center font-medium mb-8 flex-1">
+                            Versão oficial otimizada para alto desempenho e estabilidade.
+                        </p>
+                        <a href="/acess-play" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-center shadow-lg shadow-blue-600/20 transition-all">
+                            Baixar Agora
+                        </a>
+                    </div>
+                
             
         </div>
     </main>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? `${title} - Painel TPlay` : 'Painel TPlay' %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'background': 'hsl(var(--background))',
+                        'foreground': 'hsl(var(--foreground))',
+                        'card': 'hsl(var(--card))',
+                        'card-foreground': 'hsl(var(--card-foreground))',
+                        'popover': 'hsl(var(--popover))',
+                        'popover-foreground': 'hsl(var(--popover-foreground))',
+                        'primary': 'hsl(var(--primary))',
+                        'primary-foreground': 'hsl(var(--primary-foreground))',
+                        'secondary': 'hsl(var(--secondary))',
+                        'secondary-foreground': 'hsl(var(--secondary-foreground))',
+                        'muted': 'hsl(var(--muted))',
+                        'muted-foreground': 'hsl(var(--muted-foreground))',
+                        'accent': 'hsl(var(--accent))',
+                        'accent-foreground': 'hsl(var(--accent-foreground))',
+                        'destructive': 'hsl(var(--destructive))',
+                        'destructive-foreground': 'hsl(var(--destructive-foreground))',
+                        'border': 'hsl(var(--border))',
+                        'input': 'hsl(var(--input))',
+                        'ring': 'hsl(var(--ring))',
+                    },
+                    borderRadius: {
+                        'lg': `var(--radius)`,
+                        'md': `calc(var(--radius) - 2px)`,
+                        'sm': 'calc(var(--radius) - 4px)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.75rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+
+        body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+        .bg-card { background-color: hsl(var(--card)); }
+        .border-border { border-color: hsl(var(--border)); }
+        
+        /* Glassmorphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradient animations */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Modern shadows */
+        .shadow-modern {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.04);
+        }
+        
+        .dark .shadow-modern {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+    <div id="app" class="relative flex min-h-screen flex-col">
+        <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="container flex h-16 items-center mx-auto px-4 sm:px-8">
+                <div class="mr-4 flex items-center space-x-4">
+                    <a href="/painel" class="flex items-center space-x-3 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-modern group-hover:shadow-lg transition-all duration-300">
+                            <i class="fas fa-cogs text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                Painel TPlay
+                            </span>
+                            <p class="text-xs text-muted-foreground">Gestão de Apps</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex flex-1 items-center space-x-2">
+                    <button onclick="window.location.href='/painel'" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Dashboard
+                    </button>
+                    <button onclick="window.location.href='/new'" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
+                        <i class="fas fa-plus mr-2"></i>
+                        Novo App
+                    </button>
+                    <button onclick="window.open('/', '_blank')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
+                        <i class="fas fa-store mr-2"></i>
+                        Ver Loja
+                    </button>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleTheme()" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 w-10 px-0 bg-transparent border-0">
+                        <i class="fas fa-sun h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"></i>
+                        <i class="absolute fas fa-moon h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"></i>
+                        <span class="sr-only">Mudar tema</span>
+                    </button>
+                    
+                    <div class="md:hidden">
+                        <button class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 w-10 px-0">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sistema de Notificações Toast -->
+        <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+        
+        <!-- Funções Toast -->
+        <script>
+            function showToast(message, type = 'success', duration = 3000) {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+                const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+                
+                toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 transform transition-all duration-300 ease-in-out`;
+                toast.innerHTML = `
+                    <span class="text-lg font-bold">${icon}</span>
+                    <span class="text-sm font-medium">${message}</span>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Animação de entrada
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Remover após o tempo especificado
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, duration);
+            }
+            
+            // Função para upload com feedback visual
+            function uploadWithFeedback(fileInput, endpoint, successMessage = 'Upload realizado com sucesso!') {
+                const file = fileInput.files[0];
+                if (!file) {
+                    showToast('Por favor, selecione um arquivo.', 'error');
+                    return Promise.reject('No file selected');
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Mostrar toast de progresso
+                showToast('Fazendo upload do arquivo...', 'info', 2000);
+                
+                return fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Upload falhou');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showToast(successMessage, 'success');
+                    return data;
+                })
+                .catch(error => {
+                    showToast('Erro ao fazer upload: ' + error.message, 'error');
+                    throw error;
+                });
+            }
+        </script>
+
+        <main class="flex-1">
+            <div class="container mx-auto py-8 px-4 sm:px-8">
