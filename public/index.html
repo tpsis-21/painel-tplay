@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TopPlay - Central de Ajuda e Aplicativos Oficiais</title>
-    <meta name="description" content="Acesse a central oficial de downloads da TopPlay. Baixe APKs seguros para Android, TV Box e Fire Stick com tutoriais de instalação passo a passo.">
+    <title>TPlay App Store - Marketplace Oficial de Aplicativos Premium</title>
+    <meta name="description" content="A TPlay App Store é o marketplace definitivo para aplicativos de streaming, utilitários e ferramentas premium. Downloads seguros, oficiais e otimizados.">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ajuda.tplay21.in/">
-    <meta property="og:title" content="TopPlay - Central de Ajuda e Aplicativos Oficiais">
-    <meta property="og:description" content="Acesse a central oficial de downloads da TopPlay. Baixe APKs seguros para Android, TV Box e Fire Stick com tutoriais de instalação passo a passo.">
+    <meta property="og:title" content="TPlay App Store - Descubra os Melhores Aplicativos">
+    <meta property="og:description" content="Explore a TPlay App Store. Encontre aplicativos premium de streaming, IPTV e utilitários para Android, TV Box e Fire Stick. Downloads seguros e oficiais.">
     <meta property="og:image" content="/logo.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://ajuda.tplay21.in/">
-    <meta property="twitter:title" content="TopPlay - Central de Ajuda e Aplicativos Oficiais">
-    <meta property="twitter:description" content="Acesse a central oficial de downloads da TopPlay. Baixe APKs seguros para Android, TV Box e Fire Stick com tutoriais de instalação passo a passo.">
+    <meta property="twitter:title" content="TPlay App Store - Descubra os Melhores Aplicativos">
+    <meta property="twitter:description" content="Explore a TPlay App Store. Encontre aplicativos premium de streaming, IPTV e utilitários para Android, TV Box e Fire Stick. Downloads seguros e oficiais.">
     <meta property="twitter:image" content="/logo.png">
 
     <link rel="canonical" href="https://ajuda.tplay21.in/">
@@ -165,61 +165,172 @@
         <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
     </button>
 
-    <header class="hero-gradient text-white py-24 px-4 text-center relative overflow-hidden">
-        <div class="max-w-7xl mx-auto relative z-10">
-            <div class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8">
-                <i class="fas fa-play text-4xl text-white"></i>
+    <header class="relative sticky top-0 z-30 bg-white/90 dark:bg-slate-950/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-blue-600/40 via-cyan-400/40 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-play"></i>
+                </div>
+                <span class="text-xl font-black tracking-tight">TPlay Store</span>
             </div>
-            <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white">Central de <span class="text-blue-400">Ajuda</span></h1>
-            <p class="text-xl md:text-2xl text-blue-100/90 max-w-2xl mx-auto font-medium mb-12">
-                Tudo o que você precisa para configurar o TopPlay em qualquer dispositivo.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="/tutorial" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-extrabold text-lg shadow-xl transition-all flex items-center gap-3">
-                    <i class="fas fa-video"></i> Tutoriais em Vídeo
-                </a>
-                <button onclick="document.getElementById('apps-section').scrollIntoView({ behavior: 'smooth' })" class="bg-slate-800 hover:bg-slate-900 text-white border border-white/10 px-8 py-4 rounded-2xl font-extrabold text-lg transition-all flex items-center gap-3">
-                    <i class="fas fa-download"></i> Baixar Apps
-                </button>
+            <div class="flex items-center gap-3">
+                <a href="#apps-section" class="px-4 py-2 rounded-xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-colors shadow-sm">Baixar Apps</a>
+                <a href="/tutorial" class="px-4 py-2 rounded-xl font-black bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">Ajuda</a>
             </div>
         </div>
     </header>
 
-    <main id="apps-section" class="max-w-7xl mx-auto px-4 py-20">
-        <div class="flex items-center justify-between mb-12">
-            <h2 class="text-3xl font-black">Nossos Aplicativos</h2>
-            <div class="hidden md:flex gap-6 text-sm font-bold text-muted uppercase tracking-wider">
-                <span>Android TV</span>
-                <span>Fire Stick</span>
-                <span>Mobile</span>
-            </div>
+    <main id="apps-section" class="max-w-7xl mx-auto px-4 py-12">
+        <div class="flex items-end justify-between mb-8 gap-6">
+            <h1 class="text-3xl font-black tracking-tight">Aplicativos para baixar</h1>
+            <div aria-live="polite" class="sr-only">Lista de aplicativos carregada</div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
             
                 
-                    <div class="app-card p-8 rounded-[2.5rem] flex flex-col">
-                        <div class="w-24 h-24 mx-auto mb-8 bg-slate-100 dark:bg-slate-800 rounded-3xl p-4 shadow-inner">
-                            <img src="/uploads/acess-play-logo-982497.png" alt="Acess Play" class="w-full h-full object-contain rounded-xl">
+                    <div class="app-card group p-6 rounded-xl flex flex-col hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-md w-full">
+                        <div class="relative mb-6">
+                            <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-lg p-2.5 shadow-sm overflow-hidden relative ring-1 ring-slate-200 dark:ring-slate-700">
+                                <img src="/uploads/acess-play-logo-982497.png" alt="Acess Play" class="w-full h-full object-contain relative z-10 filter drop-shadow-xl">
+                                <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </div>
                         </div>
-                        <h3 class="text-2xl font-black text-center mb-4">Acess Play</h3>
-                        <p class="text-muted text-center font-medium mb-8 flex-1">
-                            Versão oficial otimizada para alto desempenho e estabilidade.
-                        </p>
-                        <a href="/acess-play" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-center shadow-lg shadow-blue-600/20 transition-all">
-                            Baixar Agora
-                        </a>
+                        
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2 tracking-tight">Acess Play</h3>
+                            
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-5 border-t border-slate-100 dark:border-slate-800/50">
+                            <div class="flex gap-3 w-full">
+                                <button onclick="openAppInfo('acess-play')" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:border-blue-600 hover:text-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Ver informações do aplicativo Acess Play">
+                                    Ver Informações
+                                </button>
+                                <a href="/uploads/acess-play-download-982500.apk" download class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Baixar Acess Play" onclick="return baixarApp(event, '/uploads/acess-play-download-982500.apk', 'Acess Play', 'acess-play')">
+                                    Baixar
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 
             
         </div>
+
+        
     </main>
 
-    <footer class="py-12 text-center border-t mt-20" style="border-color: var(--border-color);">
-        <p class="text-muted font-bold">© 2026 TopPlay. Todos os direitos reservados.</p>
+    <footer class="py-16 border-t dark:border-slate-800/50 mt-24 bg-white dark:bg-slate-950">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center text-white shadow">
+                    <i class="fas fa-play"></i>
+                </div>
+                <span class="text-2xl font-black tracking-tight">TPlay Store</span>
+            </div>
+            <p class="text-muted font-medium max-w-md leading-relaxed">
+                Downloads oficiais e seguros, com foco em experiência e performance.
+            </p>
+            <div class="pt-8 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center">
+                <p class="text-muted font-bold text-xs">© 2026 TPlay Ecosystem.</p>
+                <a href="/tutorial" class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Ajuda</a>
+            </div>
+        </div>
     </footer>
+     <div id="info-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div id="info-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-300">
+                <div class="flex justify-between items-start mb-8">
+                     <div class="flex items-center gap-4">
+                         <div id="modal-app-logo-container" class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl p-3">
+                            <img id="modal-app-logo" src="" alt="" class="w-full h-full object-contain">
+                        </div>
+                        <div>
+                            <h3 id="modal-app-name" class="text-2xl font-black"></h3>
+                        </div>
+                    </div>
+                    <button onclick="closeAppInfo()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Sobre o Aplicativo</h4>
+                        <p id="modal-app-description" class="text-muted font-medium text-sm leading-relaxed"></p>
+                    </div>
 
-    <script>
+                    
+
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-4">
+                        <a id="modal-app-link" href="#" class="flex-1 bg-blue-600 text-white text-center py-4 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25">
+                            Página de Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <script>
+        const appsData = [{"name":"Acess Play","logo_url":"","logo":"/uploads/acess-play-logo-982497.png","download_url":"","downloadUrl":"/uploads/acess-play-download-982500.apk","tutorial_titles":"Tutorial de Uso","tutorial_urls":"","visibleOnHome":true,"firestickCode":"8696327","tvboxCode":"69167","slug":"acess-play","interface_images":["/uploads/acess-play-interfaceimg-983121.png"],"tutorials":[{"title":"Tutorial de Uso","url":"/uploads/acess-play-video-982758.mp4","icon":"🎬","is_video":false}]}];
+
+        function openAppInfo(slug) {
+            const app = appsData.find(a => a.slug === slug);
+            if (!app) return;
+
+            document.getElementById('modal-app-name').textContent = app.name;
+             document.getElementById('modal-app-description').textContent = app.description || '';
+            document.getElementById('modal-app-logo').src = app.logo;
+            document.getElementById('modal-app-link').href = `/${app.slug}`;
+
+            const modal = document.getElementById('info-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+         function baixarApp(e, url, name, slug) {
+             try {
+                 e.preventDefault();
+                 const btn = e.currentTarget;
+                 const originalText = btn.textContent;
+                 btn.textContent = 'Baixando...';
+                 btn.setAttribute('aria-busy', 'true');
+                 btn.classList.add('opacity-80', 'cursor-wait');
+                 
+                 const a = document.createElement('a');
+                 a.href = url && url.length ? url : ('/' + slug);
+                 a.setAttribute('download', name ? `${name}.apk` : '');
+                 document.body.appendChild(a);
+                 setTimeout(() => {
+                     a.click();
+                     document.body.removeChild(a);
+                     setTimeout(() => {
+                         btn.textContent = originalText;
+                         btn.removeAttribute('aria-busy');
+                         btn.classList.remove('opacity-80', 'cursor-wait');
+                     }, 1200);
+                 }, 150);
+                 return false;
+             } catch (err) {
+                 return true;
+             }
+         }
+ 
+        function closeAppInfo() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('info-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'info-modal') closeAppInfo();
+        });
+
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.classList.toggle('dark');

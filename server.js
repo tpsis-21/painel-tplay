@@ -225,13 +225,25 @@ app.get('/edit/:slug', (req, res) => {
     res.render('form', { app: appToEdit });
 });
 
-app.get('/delete/:slug', (req, res) => {
-    let apps = fs.readJsonSync(DATA_FILE);
-    apps = apps.filter(a => a.slug !== req.params.slug);
-    fs.writeJsonSync(DATA_FILE, apps);
-    const appDir = path.join(APPS_DIR, req.params.slug);
-    if (fs.existsSync(appDir)) fs.removeSync(appDir);
-    res.redirect('/painel');
+app.get('/delete/:slug', async (req, res) => {
+    try {
+        let apps = fs.readJsonSync(DATA_FILE);
+        apps = apps.filter(a => a.slug !== req.params.slug);
+        fs.writeJsonSync(DATA_FILE, apps);
+        
+        // Remover diretório do app
+        const appDir = path.join(APPS_DIR, req.params.slug);
+        if (fs.existsSync(appDir)) fs.removeSync(appDir);
+        
+        // RECONSTRUIR Home e Tutoriais para remover o app da lista
+        await generateHomePage();
+        await generateTutorialsPage();
+        
+        res.redirect('/painel');
+    } catch (error) {
+        console.error('Erro ao excluir app:', error);
+        res.status(500).send("Erro ao excluir aplicativo.");
+    }
 });
 
 app.get('/delete-image/:slug/:imgName', (req, res) => {
