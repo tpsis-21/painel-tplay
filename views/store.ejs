@@ -215,9 +215,9 @@
 
                         <div class="flex items-center gap-3 pt-5 border-t border-slate-100 dark:border-slate-800/50">
                             <div class="flex gap-3 w-full">
-                                <button onclick="openAppInfo('<%= app.slug %>')" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:border-blue-600 hover:text-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Ver informações do aplicativo <%= app.name %>">
+                                <a href="/<%= app.slug %>" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:border-blue-600 hover:text-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Ver informações do aplicativo <%= app.name %>">
                                     Ver Informações
-                                </button>
+                                </a>
                                 <a href="<%= app.downloadUrl || ('/' + app.slug) %>" download class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Baixar <%= app.name %>" onclick="return baixarApp(event, '<%= app.downloadUrl || '' %>', '<%= app.name %>', '<%= app.slug %>')">
                                     Baixar
                                 </a>
@@ -248,35 +248,30 @@
             </div>
         </div>
     </footer>
-     <div id="info-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div id="info-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-300">
-                <div class="flex justify-between items-start mb-8">
-                     <div class="flex items-center gap-4">
-                         <div id="modal-app-logo-container" class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl p-3">
-                            <img id="modal-app-logo" src="" alt="" class="w-full h-full object-contain">
-                        </div>
-                        <div>
-                            <h3 id="modal-app-name" class="text-2xl font-black"></h3>
-                        </div>
+    <div id="download-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="download-title">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 id="download-title" class="text-2xl font-black">Baixando APK</h3>
+                        <p id="download-subtitle" class="text-muted text-sm"></p>
                     </div>
-                    <button onclick="closeAppInfo()" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button id="download-close" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="Fechar">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Sobre o Aplicativo</h4>
-                        <p id="modal-app-description" class="text-muted font-medium text-sm leading-relaxed"></p>
+                <div class="space-y-4">
+                    <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div id="download-progress-fill" class="h-3 bg-blue-600 rounded-full" style="width:0%"></div>
                     </div>
-
-                    
-
-                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-4">
-                        <a id="modal-app-link" href="#" class="flex-1 bg-blue-600 text-white text-center py-4 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25">
-                            Página de Download
-                        </a>
+                    <div class="flex items-center justify-between">
+                        <span id="download-progress-text" class="text-xs font-bold text-muted">0%</span>
+                        <span id="download-size-text" class="text-xs font-bold text-muted"></span>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+                        <button id="download-install-btn" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-slate-900 text-white disabled:opacity-50 disabled:cursor-not-allowed">Instalar APK</button>
+                        <button id="download-save-btn" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed">Salvar APK</button>
+                        <button id="download-cancel-btn" class="px-4 py-3 rounded-lg font-bold text-sm bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -285,62 +280,140 @@
 
      <script>
         const appsData = <%- JSON.stringify(apps) %>;
+        let downloadAbort = null;
+        let downloadUrlObject = null;
+        let downloadFilename = null;
 
-        function openAppInfo(slug) {
-            const app = appsData.find(a => a.slug === slug);
-            if (!app) return;
-
-            document.getElementById('modal-app-name').textContent = app.name;
-             document.getElementById('modal-app-description').textContent = app.description || '';
-            document.getElementById('modal-app-logo').src = app.logo;
-            document.getElementById('modal-app-link').href = `/${app.slug}`;
-
-            const modal = document.getElementById('info-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+        function abrirDownloadModal(name) {
+            const m = document.getElementById('download-modal');
+            document.getElementById('download-title').textContent = 'Baixando APK';
+            document.getElementById('download-subtitle').textContent = name || '';
+            document.getElementById('download-progress-fill').style.width = '0%';
+            document.getElementById('download-progress-text').textContent = '0%';
+            document.getElementById('download-size-text').textContent = '';
+            document.getElementById('download-install-btn').disabled = true;
+            document.getElementById('download-save-btn').disabled = true;
+            m.classList.remove('hidden');
+            m.classList.add('flex');
             document.body.style.overflow = 'hidden';
         }
-
-         function baixarApp(e, url, name, slug) {
-             try {
-                 e.preventDefault();
-                 const btn = e.currentTarget;
-                 const originalText = btn.textContent;
-                 btn.textContent = 'Baixando...';
-                 btn.setAttribute('aria-busy', 'true');
-                 btn.classList.add('opacity-80', 'cursor-wait');
-                 
-                 const a = document.createElement('a');
-                 a.href = url && url.length ? url : ('/' + slug);
-                 a.setAttribute('download', name ? `${name}.apk` : '');
-                 document.body.appendChild(a);
-                 setTimeout(() => {
-                     a.click();
-                     document.body.removeChild(a);
-                     setTimeout(() => {
-                         btn.textContent = originalText;
-                         btn.removeAttribute('aria-busy');
-                         btn.classList.remove('opacity-80', 'cursor-wait');
-                     }, 1200);
-                 }, 150);
-                 return false;
-             } catch (err) {
-                 return true;
-             }
-         }
- 
-        function closeAppInfo() {
-            const modal = document.getElementById('info-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        function fecharDownloadModal() {
+            const m = document.getElementById('download-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
             document.body.style.overflow = '';
+            if (downloadUrlObject) {
+                URL.revokeObjectURL(downloadUrlObject);
+                downloadUrlObject = null;
+            }
+            downloadFilename = null;
         }
-
-        // Fechar modal ao clicar fora
-        document.getElementById('info-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'info-modal') closeAppInfo();
+        function atualizarProgresso(p, sizeText) {
+            const pct = Math.max(0, Math.min(100, Math.floor(p)));
+            document.getElementById('download-progress-fill').style.width = pct + '%';
+            document.getElementById('download-progress-text').textContent = pct + '%';
+            if (sizeText) document.getElementById('download-size-text').textContent = sizeText;
+        }
+        function finalizarDownload(blob, filename) {
+            downloadUrlObject = URL.createObjectURL(new Blob([blob], { type: 'application/vnd.android.package-archive' }));
+            downloadFilename = filename;
+            const installBtn = document.getElementById('download-install-btn');
+            const saveBtn = document.getElementById('download-save-btn');
+            installBtn.disabled = false;
+            saveBtn.disabled = false;
+        }
+        document.getElementById('download-close').addEventListener('click', fecharDownloadModal);
+        document.getElementById('download-cancel-btn').addEventListener('click', () => {
+            if (downloadAbort) downloadAbort.abort();
+            fecharDownloadModal();
         });
-
+        document.getElementById('download-install-btn').addEventListener('click', () => {
+            if (!downloadUrlObject) return;
+            window.location.href = downloadUrlObject;
+        });
+        document.getElementById('download-save-btn').addEventListener('click', () => {
+            if (!downloadUrlObject) return;
+            const a = document.createElement('a');
+            a.href = downloadUrlObject;
+            if (downloadFilename) a.setAttribute('download', downloadFilename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+        function formatSize(bytes) {
+            if (!bytes || bytes <= 0) return '';
+            const units = ['B','KB','MB','GB'];
+            let i = 0, v = bytes;
+            while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+            return v.toFixed(1) + ' ' + units[i];
+        }
+        async function baixarApp(e, url, name, slug) {
+            try {
+                e.preventDefault();
+                const btn = e.currentTarget;
+                const originalText = btn.textContent;
+                btn.textContent = 'Baixando...';
+                btn.setAttribute('aria-busy', 'true');
+                btn.classList.add('opacity-80','cursor-wait');
+                const targetUrl = url && url.length ? url : ('/' + slug);
+                if (!window.fetch || !('body' in Response.prototype)) {
+                    const a = document.createElement('a');
+                    a.href = targetUrl;
+                    a.setAttribute('download', name ? `${name}.apk` : '');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.removeAttribute('aria-busy');
+                        btn.classList.remove('opacity-80','cursor-wait');
+                    }, 1000);
+                    return false;
+                }
+                abrirDownloadModal(name);
+                downloadAbort = new AbortController();
+                const res = await fetch(targetUrl, { cache: 'no-store', signal: downloadAbort.signal });
+                if (!res.ok || !res.body) {
+                    const a = document.createElement('a');
+                    a.href = targetUrl;
+                    a.setAttribute('download', name ? `${name}.apk` : '');
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    fecharDownloadModal();
+                    btn.textContent = originalText;
+                    btn.removeAttribute('aria-busy');
+                    btn.classList.remove('opacity-80','cursor-wait');
+                    return false;
+                }
+                const contentLengthHeader = res.headers.get('Content-Length');
+                const total = contentLengthHeader ? parseInt(contentLengthHeader, 10) : 0;
+                const reader = res.body.getReader();
+                let received = 0;
+                const chunks = [];
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    received += value.length || value.byteLength || 0;
+                    if (total > 0) {
+                        atualizarProgresso((received / total) * 100, formatSize(received) + ' / ' + formatSize(total));
+                    } else {
+                        atualizarProgresso(Math.min(99, (received % 1000000) / 10000), formatSize(received));
+                    }
+                }
+                const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
+                atualizarProgresso(100, formatSize(total || blob.size));
+                finalizarDownload(blob, name ? `${name}.apk` : 'app.apk');
+                btn.textContent = originalText;
+                btn.removeAttribute('aria-busy');
+                btn.classList.remove('opacity-80','cursor-wait');
+                return false;
+            } catch {
+                return true;
+            }
+        }
+ 
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.classList.toggle('dark');
