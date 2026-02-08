@@ -187,34 +187,15 @@
             <div aria-live="polite" class="sr-only">Lista de aplicativos carregada</div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-stretch">
             
-                
-                    <div class="app-card group p-6 rounded-xl flex flex-col hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-md w-full">
-                        <div class="relative mb-6">
-                            <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-lg p-2.5 shadow-sm overflow-hidden relative ring-1 ring-slate-200 dark:ring-slate-700">
-                                <img src="/uploads/acess-play-logo-982497.png" alt="Acess Play" class="w-full h-full object-contain relative z-10 filter drop-shadow-xl">
-                                <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2 tracking-tight">Acess Play</h3>
-                            
-                        </div>
-
-                        <div class="flex items-center gap-3 pt-5 border-t border-slate-100 dark:border-slate-800/50">
-                            <div class="flex gap-3 w-full">
-                                <a href="/acess-play" class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:border-blue-600 hover:text-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Ver informações do aplicativo Acess Play">
-                                    Ver Informações
-                                </a>
-                                <a href="/uploads/acess-play-download-982500.apk" download class="flex-1 px-4 py-3 rounded-lg font-bold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label="Baixar Acess Play" onclick="return baixarApp(event, '/uploads/acess-play-download-982500.apk', 'Acess Play', 'acess-play')">
-                                    Baixar
-                                </a>
-                            </div>
-                        </div>
+                <div class="col-span-full py-32 text-center bg-slate-50 dark:bg-slate-900/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                    <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-box-open text-4xl text-slate-400"></i>
                     </div>
-                
+                    <h3 class="text-2xl font-black mb-2">Loja em Manutenção</h3>
+                    <p class="text-muted font-medium">Estamos preparando novos aplicativos incríveis para você.</p>
+                </div>
             
         </div>
 
@@ -269,7 +250,7 @@
     </div>
 
      <script>
-        const appsData = [{"name":"Acess Play","logo_url":"","logo":"/uploads/acess-play-logo-982497.png","download_url":"","downloadUrl":"/uploads/acess-play-download-982500.apk","tutorial_titles":"Tutorial de Uso","tutorial_urls":"","visibleOnHome":true,"firestickCode":"8696327","tvboxCode":"69167","slug":"acess-play","interface_images":["/uploads/acess-play-interfaceimg-983121.png"],"tutorials":[{"title":"Tutorial de Uso","url":"/uploads/acess-play-video-982758.mp4","icon":"🎬","is_video":false}]}];
+        const appsData = [];
         let downloadAbort = null;
         let downloadUrlObject = null;
         let downloadFilename = null;

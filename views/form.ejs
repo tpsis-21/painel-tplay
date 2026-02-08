@@ -36,7 +36,7 @@
                         <input type="text" name="name" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? app.name : '' %>" required placeholder="Ex: Meu App Incrível">
                     </div>
                     <div>
-                        <label class="text-sm font-medium">Descrição breve (aparece na hero e SEO)</label>
+                        <label class="text-sm font-medium">Descrição breve (aparece na hero)</label>
                         <textarea name="description" rows="3" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"><%= app ? (app.description || '') : '' %></textarea>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -44,12 +44,28 @@
                             <label class="text-sm font-medium">Logo (URL ou Upload)</label>
                             <input type="url" name="logo_url" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="https://..." value="<%= (app && app.logo && !app.logo.startsWith('/uploads/')) ? app.logo : '' %>">
                             <input type="file" name="logo_file" class="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="image/*">
+                            <% if (app && app.logo) { %>
+                                <div class="mt-2 flex items-center space-x-3">
+                                    <img src="<%= app.logo %>" alt="Logo atual do <%= app.name %>" class="h-10 w-10 rounded-md border object-contain bg-background" loading="lazy" decoding="async">
+                                    <div class="text-xs text-muted-foreground">
+                                        <p>Logo atual em uso.</p>
+                                        <p>Se não enviar outra, esta será mantida.</p>
+                                    </div>
+                                </div>
+                            <% } %>
                             <input type="hidden" name="logo" value="<%= app ? app.logo : '' %>">
                         </div>
                         <div>
                             <label class="text-sm font-medium">Arquivo APK (URL ou Upload)</label>
                             <input type="url" name="download_url" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="https://..." value="<%= (app && app.downloadUrl && !app.downloadUrl.startsWith('/uploads/')) ? app.downloadUrl : '' %>">
                             <input type="file" name="download_file" class="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept=".apk">
+                            <% if (app && app.downloadUrl) { %>
+                                <div class="mt-2 text-xs text-muted-foreground space-y-1">
+                                    <p>Arquivo APK atual em uso.</p>
+                                    <a href="<%= app.downloadUrl %>" target="_blank" rel="noopener noreferrer" class="text-primary underline break-all">Baixar APK atual</a>
+                                    <p>Se não enviar outro, este arquivo será mantido.</p>
+                                </div>
+                            <% } %>
                             <input type="hidden" name="downloadUrl" value="<%= app ? app.downloadUrl : '' %>">
                         </div>
                     </div>
@@ -58,30 +74,100 @@
 
             <!-- Card de Tutoriais -->
             <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6 flex justify-between items-center">
+                <div class="p-6 flex justify-between items-center gap-4">
                     <div>
                         <h3 class="font-semibold tracking-tight">Tutoriais de Uso</h3>
-                        <p class="text-sm text-muted-foreground">Vídeos explicando como usar o app.</p>
+                        <p class="text-sm text-muted-foreground">Configure vídeos e guias em texto de forma separada, sem depender um do outro.</p>
                     </div>
-                    <button type="button" onclick="window.addTutorial()" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"><i class="fas fa-plus mr-2"></i>Adicionar</button>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="window.addVideoTutorial()" class="inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3">
+                            <i class="fas fa-video mr-2"></i>
+                            Adicionar vídeo
+                        </button>
+                        <button type="button" onclick="window.addTextTutorial()" class="inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3">
+                            <i class="fas fa-align-left mr-2"></i>
+                            Adicionar guia em texto
+                        </button>
+                    </div>
                 </div>
-                <div class="p-6 pt-0">
-                    <div id="tutorials-container" class="space-y-4">
-                        <% if (app && app.tutorials) { app.tutorials.forEach(tut => { %>
-                            <div class="relative grid grid-cols-1 sm:grid-cols-5 gap-3 items-start bg-background/50 p-3 rounded-md border">
-                                <div class="sm:col-span-2">
-                                    <label class="text-xs font-medium text-muted-foreground">Título</label>
-                                    <input type="text" name="tutorial_titles" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="Como instalar" value="<%= tut.title %>">
-                                </div>
-                                <div class="sm:col-span-3">
-                                    <label class="text-xs font-medium text-muted-foreground">Vídeo (URL ou Upload)</label>
-                                    <input type="url" name="tutorial_urls" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="https://..." value="<%= (tut.url && !tut.url.startsWith('/uploads/')) ? tut.url : '' %>">
-                                    <input type="file" name="video_tutorials" class="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
-                                </div>
-                                <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+                <div class="p-6 pt-0 space-y-6">
+                    <%
+                        const tutorials = app && app.tutorials ? app.tutorials : [];
+                        const videoTutorials = [];
+                        const textTutorials = [];
+                        tutorials.forEach(function(t) {
+                            if (t.is_video) {
+                                videoTutorials.push(t);
+                            } else {
+                                textTutorials.push(t);
+                            }
+                        });
+                    %>
+
+                    <!-- Lista de tutoriais em vídeo -->
+                    <section aria-label="Tutoriais em vídeo" class="space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tutoriais em vídeo</h4>
+                                <p class="text-[11px] text-muted-foreground">Use URL ou upload de arquivo para cadastrar vídeos passo a passo.</p>
                             </div>
-                        <% }); } %>
-                    </div>
+                        </div>
+                        <div id="video-tutorials-container" class="space-y-4">
+                            <% if (videoTutorials.length > 0) { videoTutorials.forEach(function(tut) { %>
+                                <div class="relative grid grid-cols-1 sm:grid-cols-5 gap-3 items-start bg-background/50 p-3 rounded-md border tutorial-item" draggable="true">
+                                    <div class="sm:col-span-2">
+                                        <label class="text-xs font-medium text-muted-foreground">Título</label>
+                                        <input type="text" name="tutorial_titles" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="Como instalar" value="<%= tut.title %>">
+                                    </div>
+                                    <div class="sm:col-span-3">
+                                        <label class="text-xs font-medium text-muted-foreground">Vídeo</label>
+                                        <p class="text-[11px] text-muted-foreground mb-1">Informe uma URL (YouTube, player próprio, etc.) ou envie um arquivo de vídeo.</p>
+                                        <input type="url" name="tutorial_urls" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="https://..." value="<%= (tut.url && !tut.url.startsWith('/uploads/')) ? tut.url : '' %>">
+                                        <input type="file" name="video_tutorials" class="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                                        <label class="mt-3 text-xs font-medium text-muted-foreground">Descrição (opcional)</label>
+                                        <textarea name="tutorial_texts" rows="3" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Explique em texto o passo a passo deste vídeo (opcional)"><%= tut.description || '' %></textarea>
+                                        <% if (tut.url && tut.url.startsWith('/uploads/')) { %>
+                                            <div class="mt-2 text-xs text-muted-foreground space-y-1">
+                                                <p>Arquivo atual em uso.</p>
+                                                <a href="<%= tut.url %>" target="_blank" rel="noopener noreferrer" class="text-primary underline break-all">Abrir arquivo atual</a>
+                                                <p>Se não enviar outro, este arquivo será mantido.</p>
+                                            </div>
+                                        <% } %>
+                                        <input type="hidden" name="tutorial_is_video" value="true">
+                                    </div>
+                                    <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+                                </div>
+                            <% }); } %>
+                        </div>
+                    </section>
+
+                    <!-- Lista de tutoriais em texto -->
+                    <section aria-label="Tutoriais em texto" class="space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tutoriais em texto</h4>
+                                <p class="text-[11px] text-muted-foreground">Crie guias escritos independentes, sem necessidade de vídeo.</p>
+                            </div>
+                        </div>
+                        <div id="text-tutorials-container" class="space-y-4">
+                            <% if (textTutorials.length > 0) { textTutorials.forEach(function(tut) { %>
+                                <div class="relative grid grid-cols-1 sm:grid-cols-5 gap-3 items-start bg-background/50 p-3 rounded-md border tutorial-item" draggable="true">
+                                    <div class="sm:col-span-2">
+                                        <label class="text-xs font-medium text-muted-foreground">Título</label>
+                                        <input type="text" name="tutorial_titles" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="Ex: Instalar no celular" value="<%= tut.title %>">
+                                    </div>
+                                    <div class="sm:col-span-3">
+                                        <label class="text-xs font-medium text-muted-foreground">Passo a passo em texto</label>
+                                        <p class="text-[11px] text-muted-foreground mb-1">Explique em detalhes cada etapa que o usuário deve seguir.</p>
+                                        <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TopPlay...\n3. Clique em Instalar."><%= tut.description || '' %></textarea>
+                                        <input type="hidden" name="tutorial_urls" value="">
+                                        <input type="hidden" name="tutorial_is_video" value="false">
+                                    </div>
+                                    <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+                                </div>
+                            <% }); } %>
+                        </div>
+                    </section>
                 </div>
             </div>
 
@@ -104,13 +190,16 @@
                         </div>
                     </label>
                     <div id="interface-images-previews" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        <% if (app && app.interface_images) { app.interface_images.forEach(img => { %>
+                        <% if (app && app.interface_images) { 
+                            const names = app.interface_image_names || [];
+                            app.interface_images.forEach((img, idx) => { %>
                             <div class="relative group existing-image" data-image-url="<%= img %>">
                                 <img src="<%= img %>" class="aspect-video w-full rounded-md object-cover">
                                 <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100">
                                     <button type="button" onclick="window.removeImage(this, '<%= img %>', '<%= img.split('/').pop() %>')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-white hover:text-destructive"><i class="fas fa-trash"></i></button>
                                 </div>
                                 <input type="hidden" name="existing_interface_images" value="<%= img %>">
+                                <input type="text" name="existing_interface_image_names" value="<%= names[idx] || '' %>" class="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Nome da tela (opcional)">
                             </div>
                         <% }); } %>
                     </div>
@@ -136,8 +225,8 @@
                     <% if (app) { %>
                         <div class="text-xs text-muted-foreground space-y-1">
                             <p><strong>Slug:</strong> /<%= app.slug %></p>
-                            <p><strong>Criado:</strong> <%= new Date(app.createdAt).toLocaleDateString('pt-BR') %></p>
-                            <p><strong>Atualizado:</strong> <%= new Date(app.updatedAt).toLocaleDateString('pt-BR') %></p>
+                            <p><strong>Criado:</strong> <%= app.createdAt ? new Date(app.createdAt).toLocaleDateString('pt-BR') : '-' %></p>
+                            <p><strong>Atualizado:</strong> <%= app.updatedAt ? new Date(app.updatedAt).toLocaleDateString('pt-BR') : '-' %></p>
                         </div>
                     <% } %>
                 </div>
@@ -157,6 +246,33 @@
                     <div>
                         <label class="text-sm font-medium">Código NTDown (TV Box / Receptores / Projetores)</label>
                         <input type="text" name="ntdownCode" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? (app.ntdownCode || app.tvboxCode) : '' %>" placeholder="Ex: 67890">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Link de download via navegador (TV Box / Receptores / Projetores)</label>
+                        <p class="text-xs text-muted-foreground mb-1">Use um link externo personalizado ou deixe em branco para usar o link de download principal.</p>
+                        <input type="url" name="browserDownloadUrl" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? app.browserDownloadUrl : '' %>" placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div class="p-6">
+                    <h3 class="font-semibold tracking-tight">Tutoriais em Vídeo Fixos</h3>
+                    <p class="text-sm text-muted-foreground">Links de vídeo usados nas seções de Downloader, NTDown e Download via navegador.</p>
+                    <p class="text-xs text-muted-foreground mt-1">Edição opcional. Se você deixar em branco, este app usará os vídeos padrão definidos em Configurações Gerais.</p>
+                </div>
+                <div class="p-6 pt-0 space-y-4">
+                    <div>
+                        <label class="text-sm font-medium">Vídeo tutorial Downloader (Android TV / Fire Stick)</label>
+                        <input type="url" name="videoDownloaderUrl" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? app.videoDownloaderUrl : '' %>" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Vídeo tutorial NTDown (TV Box / Receptores / Projetores)</label>
+                        <input type="url" name="videoNtDownUrl" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? app.videoNtDownUrl : '' %>" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Vídeo tutorial Download via Navegador</label>
+                        <input type="url" name="videoBrowserDownloadUrl" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" value="<%= app ? app.videoBrowserDownloadUrl : '' %>" placeholder="https://...">
                     </div>
                 </div>
             </div>
@@ -193,9 +309,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica para adicionar tutoriais
-    function addTutorial() {
-        const container = document.getElementById('tutorials-container');
+    // Lógica para adicionar tutoriais em vídeo
+    function addVideoTutorial() {
+        const container = document.getElementById('video-tutorials-container');
         const newTutorial = document.createElement('div');
         newTutorial.className = 'relative grid grid-cols-1 sm:grid-cols-5 gap-3 items-start bg-background/50 p-3 rounded-md border';
         newTutorial.innerHTML = `
@@ -204,15 +320,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" name="tutorial_titles" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="Como instalar">
             </div>
             <div class="sm:col-span-3">
-                <label class="text-xs font-medium text-muted-foreground">Vídeo (URL ou Upload)</label>
+                <label class="text-xs font-medium text-muted-foreground">Vídeo</label>
+                <p class="text-[11px] text-muted-foreground mb-1">Informe uma URL (YouTube, player próprio, etc.) ou envie um arquivo de vídeo.</p>
                 <input type="url" name="tutorial_urls" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="https://...">
                 <input type="file" name="video_tutorials" class="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                <label class="mt-3 text-xs font-medium text-muted-foreground">Descrição (opcional)</label>
+                <textarea name="tutorial_texts" rows="3" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Explique em texto o passo a passo deste vídeo (opcional)"></textarea>
+                <input type="hidden" name="tutorial_is_video" value="true">
             </div>
             <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
         `;
         container.appendChild(newTutorial);
     }
-    window.addTutorial = addTutorial;
+    window.addVideoTutorial = addVideoTutorial;
+
+    // Lógica para adicionar tutoriais em texto
+    function addTextTutorial() {
+        const container = document.getElementById('text-tutorials-container');
+        const newTutorial = document.createElement('div');
+        newTutorial.className = 'relative grid grid-cols-1 sm:grid-cols-5 gap-3 items-start bg-background/50 p-3 rounded-md border';
+        newTutorial.innerHTML = `
+            <div class="sm:col-span-2">
+                <label class="text-xs font-medium text-muted-foreground">Título</label>
+                <input type="text" name="tutorial_titles" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-1" placeholder="Ex: Instalar no celular">
+            </div>
+            <div class="sm:col-span-3">
+                <label class="text-xs font-medium text-muted-foreground">Passo a passo em texto</label>
+                <p class="text-[11px] text-muted-foreground mb-1">Crie um guia escrito independente, sem necessidade de vídeo.</p>
+                <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TopPlay...\n3. Clique em Instalar."></textarea>
+                <input type="hidden" name="tutorial_urls" value="">
+                <input type="hidden" name="tutorial_is_video" value="false">
+            </div>
+            <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+        `;
+        container.appendChild(newTutorial);
+    }
+    window.addTextTutorial = addTextTutorial;
+
+    function enableTutorialDragAndDrop(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        let dragItem = null;
+        container.addEventListener('dragstart', function (e) {
+            const target = e.target.closest('.tutorial-item');
+            if (!target) return;
+            dragItem = target;
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        container.addEventListener('dragover', function (e) {
+            if (!dragItem) return;
+            e.preventDefault();
+            const target = e.target.closest('.tutorial-item');
+            if (!target || target === dragItem) return;
+            const rect = target.getBoundingClientRect();
+            const offset = e.clientY - rect.top;
+            const height = rect.height / 2;
+            if (offset > height) {
+                target.after(dragItem);
+            } else {
+                target.before(dragItem);
+            }
+        });
+        container.addEventListener('dragend', function () {
+            dragItem = null;
+        });
+    }
+
+    enableTutorialDragAndDrop('video-tutorials-container');
+    enableTutorialDragAndDrop('text-tutorials-container');
 
     // Lógica para upload e preview de imagens da interface
     const uploadInput = document.getElementById('interface-images-upload');
@@ -240,6 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <button type="button" onclick="this.closest('.relative').remove()" class="text-white"><i class="fas fa-trash"></i></button>
                         </div>
+                        <input type="text" name="interface_image_names" class="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Nome da tela (opcional)">
                     `;
                     previewsContainer.appendChild(div);
                     

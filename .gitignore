@@ -4,6 +4,9 @@ public/uploads/*
 !public/uploads/.gitkeep
 public/apps/*
 !public/apps/.gitkeep
-src/data/apps.json
+data/apps.json
+data/settings.json
+.trae
+data/global_tutorials.json
 .DS_Store
 Thumbs.db

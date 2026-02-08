@@ -1,0 +1,52 @@
+<%- include('layout_header', { title: 'Login' }) %>
+
+<div class="max-w-md mx-auto">
+    <div class="rounded-xl border bg-card text-card-foreground shadow-sm p-6 space-y-6">
+        <div class="space-y-2 text-center">
+            <h1 class="text-2xl font-bold tracking-tight">Acessar Painel</h1>
+            <p class="text-sm text-muted-foreground">Informe suas credenciais de administrador para continuar.</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive-foreground">
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <form action="/login" method="POST" class="space-y-4">
+            <div class="space-y-2">
+                <label for="username" class="text-sm font-medium">Usuário</label>
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autocomplete="username"
+                    required
+                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="admin"
+                />
+            </div>
+            <div class="space-y-2">
+                <label for="password" class="text-sm font-medium">Senha</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Sua senha"
+                />
+            </div>
+            <button
+                type="submit"
+                class="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+                Entrar
+            </button>
+        </form>
+    </div>
+</div>
+
+<%- include('layout_footer') %>
+

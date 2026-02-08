@@ -154,7 +154,7 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <% if (tutorials.length === 0) { %>
+            <% if (tutorials.length === 0 && (!globalTutorials || globalTutorials.length === 0)) { %>
                 <div class="col-span-full py-24 text-center opacity-50">
                     <i class="fas fa-video-slash text-5xl mb-4"></i>
                     <p class="text-xl font-bold">Nenhum vídeo disponível no momento.</p>
@@ -180,6 +180,29 @@
                         </div>
                     </div>
                 <% }) %>
+                <% if (globalTutorials && globalTutorials.length > 0) { %>
+                    <% globalTutorials.forEach(tut => { %>
+                        <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-6">
+                            <div class="aspect-video">
+                                <video controls preload="metadata">
+                                    <source src="<%= tut.url %>" type="video/mp4">
+                                    Seu navegador não suporta vídeos.
+                                </video>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 text-purple-500 font-black text-xs uppercase tracking-widest mb-2">
+                                    <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                                    Tutorial Global
+                                </div>
+                                <h3 class="text-2xl font-black mb-2"><%= tut.title %></h3>
+                                <p class="text-sm text-muted mb-3"><%= tut.description || '' %></p>
+                                <a href="/tutorial/global/<%= tut.slug %>" class="text-sm font-bold text-muted hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-link"></i> Abrir página dedicada
+                                </a>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
             <% } %>
         </div>
     </main>

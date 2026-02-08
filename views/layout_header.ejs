@@ -129,6 +129,24 @@
         * {
             transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
+        
+        input[type="file"] {
+            color: hsl(var(--foreground));
+        }
+        
+        input[type="file"]::file-selector-button {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            cursor: pointer;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background-color: hsl(var(--accent));
+            color: hsl(var(--accent-foreground));
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen">
@@ -158,6 +176,14 @@
                         <i class="fas fa-plus mr-2"></i>
                         Novo App
                     </button>
+                    <button onclick="window.location.href='/painel/tutorials'" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
+                        <i class="fas fa-video mr-2"></i>
+                        Tutoriais Globais
+                    </button>
+                    <button onclick="window.location.href='/painel/config'" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
+                        <i class="fas fa-sliders-h mr-2"></i>
+                        Configurações
+                    </button>
                     <button onclick="window.open('/', '_blank')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-0 text-foreground hover:bg-accent">
                         <i class="fas fa-store mr-2"></i>
                         Ver Loja
@@ -170,6 +196,15 @@
                         <i class="absolute fas fa-moon h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"></i>
                         <span class="sr-only">Mudar tema</span>
                     </button>
+                    
+                    <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+                        <form action="/logout" method="POST">
+                            <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4">
+                                <i class="fas fa-sign-out-alt mr-2"></i>
+                                Sair
+                            </button>
+                        </form>
+                    <% } %>
                     
                     <div class="md:hidden">
                         <button class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-10 w-10 px-0">

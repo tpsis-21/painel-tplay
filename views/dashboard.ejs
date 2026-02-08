@@ -1,21 +1,44 @@
 <%- include('layout_header', { title: 'Dashboard' }) %>
 
 <div class="space-y-8">
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p class="text-muted-foreground">Gerencie seus aplicativos cadastrados e configurações de página.</p>
+    <div class="space-y-4">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+                <p class="text-muted-foreground">Gerencie seus aplicativos cadastrados e configurações de página.</p>
+            </div>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div class="flex items-center gap-2">
+                    <input
+                        id="app-search"
+                        type="search"
+                        placeholder="Buscar por nome ou slug..."
+                        class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    />
+                    <select
+                        id="app-visibility-filter"
+                        class="flex h-9 w-36 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                        <option value="all">Todos</option>
+                        <option value="public">Públicos</option>
+                        <option value="private">Privados</option>
+                    </select>
+                </div>
+                <a href="/new" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <i class="fas fa-plus mr-2"></i>
+                    Novo Aplicativo
+                </a>
+            </div>
         </div>
-        <a href="/new" class="btn btn-primary h-10 px-4">
-            <i class="fas fa-plus mr-2"></i>
-            Novo Aplicativo
-        </a>
     </div>
-
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="apps-grid">
         <% if (apps && apps.length > 0) { %>
             <% apps.forEach(app => { %>
-                <div class="rounded-xl border bg-card text-card-foreground shadow hover:shadow-lg transition-shadow duration-200">
+                <div class="rounded-xl border bg-card text-card-foreground shadow hover:shadow-lg transition-shadow duration-200 app-card"
+                     data-name="<%= app.name.toLowerCase() %>"
+                     data-slug="<%= app.slug.toLowerCase() %>"
+                     data-visibility="<%= app.visibleOnHome ? 'public' : 'private' %>">
                     <div class="p-6">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-4">
@@ -40,6 +63,10 @@
                         <button onclick="window.open('/<%= app.slug %>', '_blank')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-9 px-3">
                             <i class="fas fa-external-link-alt mr-2"></i>
                             Visualizar
+                        </button>
+                        <button type="button" onclick="copiarLinkApp('<%= baseUrl %>/<%= app.slug %>')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-9 px-3">
+                            <i class="fas fa-link mr-2"></i>
+                            Copiar link
                         </button>
                         <button onclick="window.location.href='/edit/<%= app.slug %>'" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-3">
                             <i class="fas fa-pencil-alt mr-2"></i>
@@ -66,6 +93,50 @@
             </div>
         <% } %>
     </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var searchInput = document.getElementById('app-search');
+        var visibilitySelect = document.getElementById('app-visibility-filter');
+        var cards = Array.prototype.slice.call(document.querySelectorAll('.app-card'));
+
+        function applyFilters() {
+            var search = (searchInput.value || '').toLowerCase().trim();
+            var visibility = visibilitySelect.value;
+
+            cards.forEach(function (card) {
+                var name = card.getAttribute('data-name') || '';
+                var slug = card.getAttribute('data-slug') || '';
+                var status = card.getAttribute('data-visibility') || 'public';
+
+                var matchesSearch = !search || name.indexOf(search) !== -1 || slug.indexOf(search) !== -1;
+                var matchesVisibility = visibility === 'all' || status === visibility;
+
+                card.style.display = (matchesSearch && matchesVisibility) ? '' : 'none';
+            });
+        }
+
+        if (searchInput && visibilitySelect && cards.length > 0) {
+            searchInput.addEventListener('input', applyFilters);
+            visibilitySelect.addEventListener('change', applyFilters);
+        }
+    });
+
+    function copiarLinkApp(url) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url)
+                .then(function () {
+                    alert('Link copiado. Agora você pode colar e compartilhar o endereço do app.');
+                })
+                .catch(function () {
+                    window.prompt('Copie o link do aplicativo:', url);
+                });
+        } else {
+            window.prompt('Copie o link do aplicativo:', url);
+        }
+    }
+</script>
 
 <%- include('layout_footer') %>

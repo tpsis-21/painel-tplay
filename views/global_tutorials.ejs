@@ -1,0 +1,212 @@
+<%- include('layout_header', { title: 'Tutoriais Globais' }) %>
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">Tutoriais Globais</h1>
+            <p class="text-muted-foreground text-sm">Vídeos de ajuda não vinculados a um app específico, para você compartilhar onde quiser.</p>
+        </div>
+        <button type="button" onclick="window.addGlobalTutorial()" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+            <i class="fas fa-plus mr-2"></i>
+            Novo Tutorial
+        </button>
+    </div>
+
+    <form action="/painel/tutorials" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div id="global-tutorials-container" class="space-y-4">
+            <% if (tutorials && tutorials.length > 0) { tutorials.forEach(function(tut, index) { %>
+                <div class="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-4">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1 space-y-2">
+                            <div class="flex items-start gap-3">
+                                <div class="w-16 h-10 rounded-lg bg-muted overflow-hidden flex items-center justify-center flex-shrink-0 border border-border">
+                                    <% if (tut.url && tut.url.startsWith('/uploads/')) { %>
+                                        <video class="w-full h-full object-cover" muted preload="metadata">
+                                            <source src="<%= tut.url %>#t=0.1" type="video/mp4">
+                                        </video>
+                                    <% } else { %>
+                                        <div class="flex items-center justify-center w-full h-full text-purple-600 dark:text-purple-300">
+                                            <i class="fas fa-play text-xs"></i>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="space-y-1">
+                                    <h2 class="text-sm font-semibold leading-snug"><%= tut.title %></h2>
+                                    <% if (tut.description) { %>
+                                        <p class="text-xs text-muted-foreground"><%= tut.description %></p>
+                                    <% } %>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/90 mt-1"
+                                        data-toggle-id="tutorial-details-<%= tut.id %>"
+                                    >
+                                        <i class="fas fa-edit text-[10px]"></i>
+                                        Editar detalhes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end justify-between gap-2">
+                            <button type="button" onclick="this.closest('.global-tutorial-card').remove()" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                            <div class="text-right space-y-1">
+                                <p class="text-[11px] font-medium text-muted-foreground">Link público</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-[11px] text-primary bg-muted px-2 py-1 rounded select-all break-all max-w-[220px]">
+                                        <%= baseUrl %>/tutorial/global/<%= tut.slug %>
+                                    </span>
+                                    <button type="button" onclick="copiarLinkTutorial('<%= baseUrl %>/tutorial/global/<%= tut.slug %>')" class="inline-flex items-center justify-center rounded-md text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground px-2 py-1">
+                                        <i class="fas fa-link mr-1"></i>
+                                        Copiar
+                                    </button>
+                                </div>
+                                <a href="/tutorial/global/<%= tut.slug %>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-md text-[11px] font-medium text-muted-foreground hover:text-primary mt-1">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    Ver página pública
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tutorial-details-<%= tut.id %>" class="border-t border-border pt-4 mt-2 space-y-3 hidden">
+                        <div class="flex-1 space-y-2">
+                            <div>
+                                <label class="text-xs font-medium text-muted-foreground">Título do Tutorial</label>
+                                <input type="text" name="titles" value="<%= tut.title %>" class="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex: Como instalar em qualquer dispositivo" required>
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-muted-foreground">Descrição breve</label>
+                                <textarea name="descriptions" rows="2" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Explique em poucas palavras para que serve este tutorial."><%= tut.description || '' %></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-medium text-muted-foreground">URL do Vídeo (opcional)</label>
+                                    <input type="url" name="urls" value="<%= tut.url && !tut.url.startsWith('/uploads/') ? tut.url : '' %>" class="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="https://...">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-muted-foreground">Ou enviar arquivo de vídeo</label>
+                                    <input type="file" name="files" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                                    <% if (tut.url && tut.url.startsWith('/uploads/')) { %>
+                                        <p class="mt-1 text-[11px] text-muted-foreground">
+                                            Vídeo atual:
+                                            <a href="<%= tut.url %>" target="_blank" rel="noopener noreferrer" class="underline text-primary break-all">abrir</a>
+                                            (será mantido se não enviar outro)
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="ids" value="<%= tut.id %>">
+                    <input type="hidden" name="slugs" value="<%= tut.slug %>">
+                </div>
+            <% }); } %>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4">
+                <i class="fas fa-save mr-2"></i>
+                Salvar alterações
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function bindToggleButtons(scope) {
+        const root = scope || document;
+        const buttons = root.querySelectorAll('[data-toggle-id]');
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const id = btn.getAttribute('data-toggle-id');
+                if (!id) return;
+                const details = document.getElementById(id);
+                if (!details) return;
+                details.classList.toggle('hidden');
+            });
+        });
+    }
+
+    function addGlobalTutorial() {
+        const container = document.getElementById('global-tutorials-container');
+        const uniqueId = 'tutorial-new-' + Date.now();
+        const div = document.createElement('div');
+        div.className = 'global-tutorial-card rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-4';
+        div.innerHTML = `
+            <div class="flex justify-between items-start gap-4">
+                <div class="flex-1 space-y-2">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-play text-xs"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <h2 class="text-sm font-semibold leading-snug">Novo tutorial global</h2>
+                            <p class="text-[11px] text-muted-foreground">Preencha os detalhes abaixo e salve para gerar o link público.</p>
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/90 mt-1"
+                                data-toggle-id="${uniqueId}"
+                            >
+                                <i class="fas fa-edit text-[10px]"></i>
+                                Editar detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end justify-between gap-2">
+                    <button type="button" onclick="this.closest('.global-tutorial-card').remove()" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="${uniqueId}" class="border-t border-border pt-4 mt-2 space-y-3">
+                <div class="flex-1 space-y-2">
+                    <div>
+                        <label class="text-xs font-medium text-muted-foreground">Título do Tutorial</label>
+                        <input type="text" name="titles" class="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex: Tutorial geral de instalação" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-muted-foreground">Descrição breve</label>
+                        <textarea name="descriptions" rows="2" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Explique em poucas palavras para que serve este tutorial."></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">URL do Vídeo (opcional)</label>
+                            <input type="url" name="urls" class="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">Ou enviar arquivo de vídeo</label>
+                            <input type="file" name="files" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        bindToggleButtons(div);
+    }
+
+    bindToggleButtons(document);
+    window.addGlobalTutorial = addGlobalTutorial;
+});
+
+function copiarLinkTutorial(url) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url)
+            .then(function () {
+                alert('Link copiado. Agora você pode colar e compartilhar o endereço do tutorial.');
+            })
+            .catch(function () {
+                window.prompt('Copie o link do tutorial:', url);
+            });
+    } else {
+        window.prompt('Copie o link do tutorial:', url);
+    }
+}
+</script>
+
+<%- include('layout_footer') %>

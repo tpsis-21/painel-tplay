@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{app_name}} - Loja TPlay | Download Oficial</title>
+    <title>{{page_title}}</title>
     <meta name="description" content="{{meta_description}}">
     <link rel="icon" href="/favicon.ico">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{app_url}}">
-    <meta property="og:title" content="{{app_name}} - Loja TPlay | Download Oficial">
+    <meta property="og:title" content="{{page_title}}">
     <meta property="og:description" content="{{meta_description}}">
     <meta property="og:image" content="{{app_logo}}">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{app_url}}">
-    <meta name="twitter:title" content="{{app_name}} - Loja TPlay | Download Oficial">
+    <meta name="twitter:title" content="{{page_title}}">
     <meta name="twitter:description" content="{{meta_description}}">
     <meta name="twitter:image" content="{{app_logo}}">
 
@@ -184,26 +184,26 @@
 <body class="min-h-screen bg-background text-foreground">
     <!-- Header da Loja -->
     <header class="store-header bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
                 <!-- Logo e Badge -->
-                <div class="flex items-center justify-center mb-8">
-                    <div class="glass rounded-2xl p-6 shadow-2xl">
-                        <img class="w-32 h-32 object-contain" src="{{app_logo}}" alt="Logo {{app_name}}" 
+                <div class="flex items-center justify-center mb-4">
+                    <div class="glass rounded-2xl p-4 shadow-2xl">
+                        <img class="w-24 h-24 object-contain" src="{{app_logo}}" alt="Logo {{app_name}}" 
                              loading="lazy" decoding="async">
                     </div>
                 </div>
 
                 <!-- Título e Descrição -->
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">
                     {{app_name}}
                 </h1>
-                <p class="text-xl md:text-2xl opacity-90 mb-8 max-w-2xl mx-auto">
+                <p class="text-lg md:text-xl opacity-90 mb-4 max-w-2xl mx-auto">
                     {{app_description}}
                 </p>
 
                 <!-- Rating e Estatísticas -->
-                <div class="flex items-center justify-center space-x-8 text-sm md:text-base mb-8">
+                <div class="flex items-center justify-center space-x-6 text-sm md:text-base mb-4">
                     <div class="flex items-center space-x-2">
                         <div class="flex text-yellow-400">
                             <i class="fas fa-star"></i>
@@ -221,7 +221,7 @@
                 </div>
 
                 <!-- Botões de Ação Principais -->
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
                     <button id="download-btn" class="inline-flex items-center justify-center rounded-full bg-white text-blue-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600">
                         <i class="fas fa-download mr-3"></i>
                         Baixar Agora
@@ -277,21 +277,34 @@
         <!-- Seção Android Mobile -->
         <section id="android-section" class="device-section bg-card border border-border rounded-xl p-6 md:p-8 hidden">
             <h2 class="text-2xl font-bold mb-6 text-card-foreground">📱 Celular Android</h2>
-            <p class="text-muted-foreground mb-6">Para instalar em seu celular Android, baixe o arquivo diretamente:</p>
-            
-            <div class="bg-muted rounded-lg p-4 mb-6">
-                <div class="flex items-center justify-between">
-                    <span class="font-mono text-sm">Toque no botão "Baixar Agora" acima</span>
-                    <button onclick="copiarTexto('https://meu.guru/tpplaypro')" class="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90 transition-colors">
-                        📋 Copiar
-                    </button>
-                </div>
+            <p class="text-muted-foreground mb-6">
+                Para instalar em seu celular Android, use o botão abaixo para baixar o APK
+                ou copie o link direto para enviar para outro dispositivo.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+                <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 text-sm font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    onclick="baixarApp(event, '{{download_url}}', '{{app_name}}')"
+                >
+                    <i class="fas fa-download mr-2"></i>
+                    Baixar Agora
+                </button>
+                <button
+                    type="button"
+                    onclick="copiarTexto('{{download_url}}')"
+                    class="inline-flex items-center justify-center rounded-full bg-muted text-card-foreground hover:bg-muted/80 px-4 py-2 text-xs font-medium border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                    <i class="fas fa-link mr-2"></i>
+                    Copiar link direto
+                </button>
             </div>
             
             <div class="space-y-4">
                 <h3 class="font-semibold text-card-foreground">📋 Como instalar:</h3>
                 <ol class="space-y-2 text-muted-foreground">
-                    <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">1</span> Baixe o arquivo APK</li>
+                    <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">1</span> Baixe o arquivo APK usando o botão acima</li>
                     <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">2</span> Abra o arquivo baixado</li>
                     <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">3</span> Permita instalação de "Fontes desconhecidas" se solicitado</li>
                     <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">4</span> Toque em "Instalar"</li>
@@ -371,9 +384,7 @@
             </div>
             
             <div class="tutorial-buttons">
-                <a class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center" href="https://meu.guru/tutorial-firestick" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-play-circle mr-2"></i>Vídeo tutorial
-                </a>
+                {{firestick_tutorial_button}}
             </div>
         </section>
 
@@ -392,7 +403,7 @@
             </div>
             
             <div class="space-y-4 mb-6">
-                <h3 class="font-semibold text-card-foreground">📋 Como usar:</h3>
+                <h3 class="font-semibold text-card-foreground">📋 Como usar via NTDown:</h3>
                 <ol class="space-y-2 text-muted-foreground">
                     <li class="flex items-center">
                         <span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">1</span>
@@ -410,10 +421,39 @@
             </div>
             
             <div class="tutorial-buttons">
-                <a class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center" href="https://meu.guru/tutorial-ntdown" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-play-circle mr-2"></i>Vídeo tutorial
-                </a>
+                {{ntdown_tutorial_button}}
             </div>
+
+            <section class="mt-10 border-t border-border pt-6">
+                <h3 class="text-xl font-bold mb-4 text-card-foreground">🌐 Download via Navegador</h3>
+                <p class="text-muted-foreground mb-4">Se preferir baixar diretamente pelo navegador do seu dispositivo:</p>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
+                        <p class="text-sm text-card-foreground">Abra o navegador do seu aparelho (Chrome, Firefox, etc.).</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
+                        <div class="flex-1 space-y-2">
+                            <p class="text-sm text-card-foreground">Cole o link abaixo na barra de endereço:</p>
+                            <div class="bg-muted rounded-lg p-3 flex items-center justify-between gap-3">
+                                <span class="font-mono text-xs break-all">{{browser_download_url}}</span>
+                                <button onclick="copiarTexto('{{browser_download_url}}')" class="bg-primary text-primary-foreground px-3 py-1 rounded-md text-xs hover:bg-primary/90 transition-colors">
+                                    📋 Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
+                        <p class="text-sm text-card-foreground">Pressione Enter e aguarde o download iniciar. Depois é só instalar o APK.</p>
+                    </div>
+                </div>
+
+                <div class="tutorial-buttons mt-6">
+                    {{browser_download_tutorial_button}}
+                </div>
+            </section>
         </section>
         
         
@@ -422,7 +462,7 @@
         </div>
 
         <!-- Ajuda -->
-        <div id="tab-help" class="tab-content hidden">
+        <div id="tab-help" class="tab-content">
             <section class="bg-card border border-border rounded-xl p-6 md:p-8">
                 <h2 class="text-2xl font-bold mb-2 text-card-foreground">ℹ️ Informações / Ajuda</h2>
                 <p class="text-muted-foreground">Tutoriais e screenshots para apoiar a instalação e uso.</p>
@@ -431,29 +471,19 @@
                 <!-- Screenshots -->
                 <section class="bg-card border border-border rounded-xl p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-6 text-card-foreground">📸 Screenshots</h2>
-                    <div id="interface-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-muted rounded-lg aspect-video flex items-center justify-center">
-                            <i class="fas fa-image text-3xl text-muted-foreground"></i>
-                        </div>
-                    </div>
+                    <div id="interface-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </section>
-                <!-- Tutoriais -->
+                <!-- Tutoriais em vídeo -->
                 <section class="bg-card border border-border rounded-xl p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-6 text-card-foreground">🎥 Vídeos Tutoriais</h2>
-                    <div id="video-grid" class="space-y-4">
-                        <div class="bg-muted rounded-lg aspect-video flex items-center justify-center">
-                            <i class="fas fa-play-circle text-3xl text-muted-foreground"></i>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-6 text-card-foreground mt-8">📚 Guias em Texto</h3>
-                    <div id="links-grid" class="space-y-3">
-                        <div class="bg-muted rounded-lg p-4 flex items-center">
-                            <i class="fas fa-book text-muted-foreground mr-3"></i>
-                            <span class="text-muted-foreground">Guia de instalação</span>
-                        </div>
-                    </div>
+                    <div id="video-grid" class="space-y-4"></div>
                 </section>
             </div>
+            <!-- Guias em texto (seção separada) -->
+            <section id="text-guides-section" class="bg-card border border-border rounded-xl p-6 md:p-8 mt-8">
+                <h2 class="text-2xl font-bold mb-6 text-card-foreground">📚 Guias em Texto</h2>
+                <div id="links-grid" class="space-y-3"></div>
+            </section>
         </div>
     </main>
 
@@ -490,14 +520,25 @@
                         <span id="download-progress-text" class="text-xs font-semibold text-muted-foreground">0%</span>
                         <span id="download-size-text" class="text-xs font-semibold text-muted-foreground"></span>
                     </div>
-                    <div class="pt-4 border-t border-border flex gap-3">
-                        <button id="download-install-btn" class="flex-1 px-4 py-3 rounded-md font-semibold text-sm bg-foreground text-background disabled:opacity-50 disabled:cursor-not-allowed">Instalar APK</button>
-                        <button id="download-save-btn" class="flex-1 px-4 py-3 rounded-md font-semibold text-sm bg-card border border-border text-card-foreground disabled:opacity-50 disabled:cursor-not-allowed">Salvar APK</button>
+                    <div class="pt-4 border-t border-border flex justify-end">
                         <button id="download-cancel-btn" class="px-4 py-3 rounded-md font-semibold text-sm bg-muted text-muted-foreground border border-border">Cancelar</button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="lightbox" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/80 p-4">
+        <button type="button" id="lightbox-close" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors" aria-label="Fechar visualização de imagem">
+            <i class="fas fa-times"></i>
+        </button>
+        <button type="button" id="lightbox-prev" class="absolute left-4 md:left-8 w-10 h-10 rounded-full bg-muted/80 text-muted-foreground flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors" aria-label="Imagem anterior">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button type="button" id="lightbox-next" class="absolute right-4 md:right-8 w-10 h-10 rounded-full bg-muted/80 text-muted-foreground flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors" aria-label="Próxima imagem">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <img id="lightbox-img" src="" alt="Pré-visualização da imagem do aplicativo" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain">
     </div>
 
     <script>
@@ -527,15 +568,74 @@
             }, duration);
         }
 
-        // Alternância simples para seções secundárias (Screenshots/Tutoriais)
-        function toggleSection(sectionId) {
-            const el = document.getElementById(sectionId);
-            if (!el) return;
-            const willShow = el.classList.contains('hidden');
-            el.classList.toggle('hidden');
-            if (willShow) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        let interfaceImagesList = [];
+        let currentImageIndex = -1;
+        let lightboxTouchStartX = null;
+
+        function initInterfaceImagesList() {
+            const container = document.getElementById('interface-grid');
+            if (!container) return;
+            const imgs = container.querySelectorAll('img');
+            interfaceImagesList = Array.from(imgs).map(img => img.getAttribute('src'));
+        }
+
+        function mostrarImagemAtual() {
+            const l = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            if (!l || !img || currentImageIndex < 0 || currentImageIndex >= interfaceImagesList.length) return;
+            img.src = interfaceImagesList[currentImageIndex];
+        }
+
+        function abrirLightbox(src) {
+            const l = document.getElementById('lightbox');
+            if (!l) return;
+            if (!interfaceImagesList || interfaceImagesList.length === 0) {
+                initInterfaceImagesList();
             }
+            if (src) {
+                const idx = interfaceImagesList.indexOf(src);
+                currentImageIndex = idx !== -1 ? idx : 0;
+            } else if (currentImageIndex === -1 && interfaceImagesList.length > 0) {
+                currentImageIndex = 0;
+            }
+            mostrarImagemAtual();
+            l.classList.remove('hidden');
+            l.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharLightbox() {
+            const l = document.getElementById('lightbox');
+            if (!l) return;
+            l.classList.add('hidden');
+            l.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        function lightboxImagemAnterior() {
+            if (!interfaceImagesList || interfaceImagesList.length === 0) return;
+            if (currentImageIndex <= 0) {
+                currentImageIndex = interfaceImagesList.length - 1;
+            } else {
+                currentImageIndex -= 1;
+            }
+            mostrarImagemAtual();
+        }
+
+        function lightboxProximaImagem() {
+            if (!interfaceImagesList || interfaceImagesList.length === 0) return;
+            if (currentImageIndex >= interfaceImagesList.length - 1) {
+                currentImageIndex = 0;
+            } else {
+                currentImageIndex += 1;
+            }
+            mostrarImagemAtual();
+        }
+
+        function scrollToHelp() {
+            const el = document.getElementById('tab-help');
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // Funções para popular conteúdo dinâmico
@@ -586,7 +686,7 @@
                 <button onclick="window.open('${link.url}', '_blank')" class="w-full text-left p-4 bg-card border border-border rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-2 flex-shrink-0">
-                            <i class="fas fa-book text-green-600 dark:text-green-400"></i>
+                            <i class="fas fa-file-alt text-green-600 dark:text-green-400"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="font-semibold text-sm text-card-foreground group-hover:text-accent-foreground">${link.titulo}</h3>
@@ -597,6 +697,61 @@
                 </button>
             `).join('');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initInterfaceImagesList();
+            const prevBtn = document.getElementById('lightbox-prev');
+            const nextBtn = document.getElementById('lightbox-next');
+            const closeBtn = document.getElementById('lightbox-close');
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+
+            if (prevBtn) prevBtn.addEventListener('click', lightboxImagemAnterior);
+            if (nextBtn) nextBtn.addEventListener('click', lightboxProximaImagem);
+            if (closeBtn) closeBtn.addEventListener('click', fecharLightbox);
+
+            if (lightbox) {
+                lightbox.addEventListener('click', function (e) {
+                    if (e.target === lightbox) {
+                        fecharLightbox();
+                    }
+                });
+            }
+
+            if (img) {
+                img.addEventListener('touchstart', function (e) {
+                    if (!e.touches || e.touches.length !== 1) return;
+                    lightboxTouchStartX = e.touches[0].clientX;
+                });
+                img.addEventListener('touchend', function (e) {
+                    if (lightboxTouchStartX === null || !e.changedTouches || e.changedTouches.length !== 1) return;
+                    const deltaX = e.changedTouches[0].clientX - lightboxTouchStartX;
+                    if (Math.abs(deltaX) > 40) {
+                        if (deltaX < 0) {
+                            lightboxProximaImagem();
+                        } else {
+                            lightboxImagemAnterior();
+                        }
+                    }
+                    lightboxTouchStartX = null;
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                const isOpen = lightbox && lightbox.classList.contains('flex') && !lightbox.classList.contains('hidden');
+                if (!isOpen) return;
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    lightboxImagemAnterior();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    lightboxProximaImagem();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    fecharLightbox();
+                }
+            });
+        });
 
         function copiarTexto(texto) {
             if (navigator.clipboard && window.isSecureContext) {
@@ -628,8 +783,6 @@
         }
 
         let downloadAbort = null;
-        let downloadUrlObject = null;
-        let downloadFilename = null;
         function abrirDownloadModal(name) {
             const m = document.getElementById('download-modal');
             document.getElementById('download-title').textContent = 'Baixando APK';
@@ -637,8 +790,6 @@
             document.getElementById('download-progress-fill').style.width = '0%';
             document.getElementById('download-progress-text').textContent = '0%';
             document.getElementById('download-size-text').textContent = '';
-            document.getElementById('download-install-btn').disabled = true;
-            document.getElementById('download-save-btn').disabled = true;
             m.classList.remove('hidden');
             m.classList.add('flex');
             document.body.style.overflow = 'hidden';
@@ -648,11 +799,6 @@
             m.classList.add('hidden');
             m.classList.remove('flex');
             document.body.style.overflow = '';
-            if (downloadUrlObject) {
-                URL.revokeObjectURL(downloadUrlObject);
-                downloadUrlObject = null;
-            }
-            downloadFilename = null;
         }
         function atualizarProgresso(p, sizeText) {
             const pct = Math.max(0, Math.min(100, Math.floor(p)));
@@ -661,30 +807,23 @@
             if (sizeText) document.getElementById('download-size-text').textContent = sizeText;
         }
         function finalizarDownload(blob, filename) {
-            downloadUrlObject = URL.createObjectURL(new Blob([blob], { type: 'application/vnd.android.package-archive' }));
-            downloadFilename = filename;
-            const installBtn = document.getElementById('download-install-btn');
-            const saveBtn = document.getElementById('download-save-btn');
-            installBtn.disabled = false;
-            saveBtn.disabled = false;
+            const urlObject = URL.createObjectURL(new Blob([blob], { type: 'application/vnd.android.package-archive' }));
+            const a = document.createElement('a');
+            a.href = urlObject;
+            if (filename) a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => {
+                URL.revokeObjectURL(urlObject);
+            }, 5000);
+            showToast('Download concluído. Abra o arquivo baixado e instale-o. Caso necessário, dê as permissões solicitadas pelo sistema do seu dispositivo.', 'info', 6000);
+            fecharDownloadModal();
         }
         document.getElementById('download-close').addEventListener('click', fecharDownloadModal);
         document.getElementById('download-cancel-btn').addEventListener('click', () => {
             if (downloadAbort) downloadAbort.abort();
             fecharDownloadModal();
-        });
-        document.getElementById('download-install-btn').addEventListener('click', () => {
-            if (!downloadUrlObject) return;
-            window.location.href = downloadUrlObject;
-        });
-        document.getElementById('download-save-btn').addEventListener('click', () => {
-            if (!downloadUrlObject) return;
-            const a = document.createElement('a');
-            a.href = downloadUrlObject;
-            if (downloadFilename) a.setAttribute('download', downloadFilename);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         });
         function formatSize(bytes) {
             if (!bytes || bytes <= 0) return '';
@@ -801,7 +940,7 @@
             const btnInfo = document.getElementById('info-btn');
             if (btnInfo) {
                 btnInfo.addEventListener('click', function() {
-                    toggleSection('tab-help');
+                    scrollToHelp();
                 });
             }
 
@@ -846,6 +985,24 @@
                 androidButton.classList.remove('bg-muted', 'text-muted-foreground');
                 androidButton.classList.add('bg-primary', 'text-primary-foreground');
             }
+
+            const lightbox = document.getElementById('lightbox');
+            const lightboxClose = document.getElementById('lightbox-close');
+            if (lightboxClose) {
+                lightboxClose.addEventListener('click', fecharLightbox);
+            }
+            if (lightbox) {
+                lightbox.addEventListener('click', function(e) {
+                    if (e.target === lightbox) {
+                        fecharLightbox();
+                    }
+                });
+            }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    fecharLightbox();
+                }
+            });
 
         });
 

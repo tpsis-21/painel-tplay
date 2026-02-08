@@ -9,3 +9,18 @@ No painel deve ser possivel criar paginas como a do template para aplicativos co
 na home nós vamos ter uma especie de loja de apps (com os apps que forem configurados pra ficar visiveis nela)
 
 Sistema usa hospedagem compartilhada da hostinger;
+o intuito é ter um sistema robusto e seguro, com alta performance, para que os usuários possam ter uma boa experiência ao usar o painel. E assim facilitar o uso de forma intuitiva e amigável.
+
+Sem conteúdo genéricos!
+
+Sempre pense em duas coisas:
+1. Código (pode trocar inteiro).
+2. Dados de produção (devem ser reaproveitados).
+Trate data/apps.json e public/uploads/ como banco de dados .
+
+Garanta que o repositório NÃO versiona os dados de produção:
+
+- Em .gitignore (no seu repositório), certifique-se de ter:
+data/apps.json
+public/uploads/
+public/apps/
