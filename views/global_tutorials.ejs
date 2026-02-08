@@ -15,7 +15,7 @@
     <form action="/painel/tutorials" method="POST" enctype="multipart/form-data" class="space-y-6">
         <div id="global-tutorials-container" class="space-y-4">
             <% if (tutorials && tutorials.length > 0) { tutorials.forEach(function(tut, index) { %>
-                <div class="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-4">
+                <div class="global-tutorial-card rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-4">
                     <div class="flex justify-between items-start gap-4">
                         <div class="flex-1 space-y-2">
                             <div class="flex items-start gap-3">
@@ -47,7 +47,7 @@
                             </div>
                         </div>
                         <div class="flex flex-col items-end justify-between gap-2">
-                            <button type="button" onclick="this.closest('.global-tutorial-card').remove()" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
+                            <button type="button" onclick="window.confirmRemoveGlobalTutorial(this, '<%= String(tut.title || '').replace(/'/g, '\\\\\'') %>')" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
                                 <i class="fas fa-times text-xs"></i>
                             </button>
                             <div class="text-right space-y-1">
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="flex flex-col items-end justify-between gap-2">
-                    <button type="button" onclick="this.closest('.global-tutorial-card').remove()" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
+                    <button type="button" onclick="window.confirmRemoveGlobalTutorial(this, 'Novo tutorial global')" class="inline-flex items-center justify-center rounded-full text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-7 h-7">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -193,6 +193,14 @@ document.addEventListener('DOMContentLoaded', function() {
     bindToggleButtons(document);
     window.addGlobalTutorial = addGlobalTutorial;
 });
+
+window.confirmRemoveGlobalTutorial = function(button, title) {
+    const name = (title || '').trim();
+    const ok = window.confirm(`Tem certeza que deseja remover este tutorial${name ? `: "${name}"` : ''}?\\n\\nVocê precisa salvar para confirmar a exclusão.`);
+    if (!ok) return;
+    const card = button && button.closest ? button.closest('.global-tutorial-card') : null;
+    if (card) card.remove();
+}
 
 function copiarLinkTutorial(url) {
     if (navigator.clipboard && window.isSecureContext) {

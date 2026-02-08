@@ -83,6 +83,8 @@ function saveGlobalTutorials(list) {
 function defaultSettings() {
     return {
         universalTutorials: {
+            videoAndroidTvDownloaderUrl: '',
+            videoFirestickDownloaderUrl: '',
             videoDownloaderUrl: '',
             videoNtDownUrl: '',
             videoBrowserDownloadUrl: ''
@@ -282,22 +284,61 @@ app.get('/painel/tutorials', ensureAuthenticated, (req, res) => {
 
 app.get('/painel/config', ensureAuthenticated, (req, res) => {
     const settings = loadSettings();
-    res.render('settings', { settings });
+    res.render('settings', { settings, baseUrl: BASE_URL });
 });
 
-app.post('/painel/config', ensureAuthenticated, (req, res) => {
+app.post('/painel/config', ensureAuthenticated, upload.fields([
+    { name: 'universal_androidtv_video_file', maxCount: 1 },
+    { name: 'universal_firestick_video_file', maxCount: 1 },
+    { name: 'universal_ntdown_video_file', maxCount: 1 },
+    { name: 'universal_browser_video_file', maxCount: 1 }
+]), async (req, res) => {
     try {
         const body = req.body;
         const current = loadSettings();
+        const existing = (current && current.universalTutorials) ? current.universalTutorials : {};
+        const filesByField = req.files || {};
+
+        const fileUrl = (field) => {
+            const f = filesByField[field] && filesByField[field][0];
+            return f ? ('/uploads/' + f.filename) : '';
+        };
+
+        const pickUrl = (bodyValue, uploadedValue, fallbackValue) => {
+            if (uploadedValue) return uploadedValue;
+            if (typeof bodyValue === 'string') return bodyValue.trim();
+            return fallbackValue || '';
+        };
+
+        const legacyDownloaderFallback = existing.videoDownloaderUrl || '';
         const next = {
             ...current,
             universalTutorials: {
-                videoDownloaderUrl: body.universalVideoDownloaderUrl || '',
-                videoNtDownUrl: body.universalVideoNtDownUrl || '',
-                videoBrowserDownloadUrl: body.universalVideoBrowserDownloadUrl || ''
+                ...existing,
+                videoAndroidTvDownloaderUrl: pickUrl(
+                    body.universalVideoAndroidTvDownloaderUrl,
+                    fileUrl('universal_androidtv_video_file'),
+                    existing.videoAndroidTvDownloaderUrl || legacyDownloaderFallback
+                ),
+                videoFirestickDownloaderUrl: pickUrl(
+                    body.universalVideoFirestickDownloaderUrl,
+                    fileUrl('universal_firestick_video_file'),
+                    existing.videoFirestickDownloaderUrl || legacyDownloaderFallback
+                ),
+                videoNtDownUrl: pickUrl(
+                    body.universalVideoNtDownUrl,
+                    fileUrl('universal_ntdown_video_file'),
+                    existing.videoNtDownUrl || ''
+                ),
+                videoBrowserDownloadUrl: pickUrl(
+                    body.universalVideoBrowserDownloadUrl,
+                    fileUrl('universal_browser_video_file'),
+                    existing.videoBrowserDownloadUrl || ''
+                )
             }
         };
         saveSettings(next);
+        await rebuildAll();
         res.redirect('/painel/config');
     } catch (error) {
         console.error('Erro ao salvar configurações gerais:', error);
@@ -708,9 +749,21 @@ async function generateAppPage(appData) {
         const textSectionRegex = /<section\s+id="text-guides-section"[\s\S]*?<\/section>/;
         finalHtml = finalHtml.replace(textSectionRegex, '');
     }
-    const firestickVideoUrl = appData.videoDownloaderUrl || universal.videoDownloaderUrl || '';
+    const androidTvVideoUrl = appData.videoAndroidTvDownloaderUrl
+        || appData.videoDownloaderUrl
+        || universal.videoAndroidTvDownloaderUrl
+        || universal.videoDownloaderUrl
+        || '';
+    const firestickVideoUrl = appData.videoFirestickDownloaderUrl
+        || appData.videoDownloaderUrl
+        || universal.videoFirestickDownloaderUrl
+        || universal.videoDownloaderUrl
+        || '';
     const ntdownVideoUrl = appData.videoNtDownUrl || universal.videoNtDownUrl || '';
     const browserVideoUrl = appData.videoBrowserDownloadUrl || universal.videoBrowserDownloadUrl || '';
+    const androidTvTutorialButton = androidTvVideoUrl
+        ? `<a class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center" href="${androidTvVideoUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play-circle mr-2"></i>Vídeo tutorial</a>`
+        : '';
     const firestickTutorialButton = firestickVideoUrl
         ? `<a class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center" href="${firestickVideoUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play-circle mr-2"></i>Vídeo tutorial</a>`
         : '';
@@ -724,6 +777,7 @@ async function generateAppPage(appData) {
         ? `<a class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center" href="${browserVideoUrl}" target="_blank" rel="noopener noreferrer"><i class="fas fa-play-circle mr-2"></i>Vídeo tutorial</a>`
         : '';
     finalHtml = finalHtml
+        .replace(/{{androidtv_tutorial_button}}/g, androidTvTutorialButton)
         .replace(/{{firestick_tutorial_button}}/g, firestickTutorialButton)
         .replace(/{{ntdown_tutorial_button}}/g, ntdownTutorialButton)
         .replace(/{{browser_download_url}}/g, browserDownloadUrl)

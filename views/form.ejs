@@ -135,7 +135,7 @@
                                         <% } %>
                                         <input type="hidden" name="tutorial_is_video" value="true">
                                     </div>
-                                    <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+                                    <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Tem certeza que deseja remover este tutorial?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
                                 </div>
                             <% }); } %>
                         </div>
@@ -163,7 +163,7 @@
                                         <input type="hidden" name="tutorial_urls" value="">
                                         <input type="hidden" name="tutorial_is_video" value="false">
                                     </div>
-                                    <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+                                    <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Tem certeza que deseja remover este guia em texto?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
                                 </div>
                             <% }); } %>
                         </div>
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <textarea name="tutorial_texts" rows="3" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Explique em texto o passo a passo deste vídeo (opcional)"></textarea>
                 <input type="hidden" name="tutorial_is_video" value="true">
             </div>
-            <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+            <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Tem certeza que deseja remover este tutorial?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
         `;
         container.appendChild(newTutorial);
     }
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="hidden" name="tutorial_urls" value="">
                 <input type="hidden" name="tutorial_is_video" value="false">
             </div>
-            <button type="button" onclick="this.closest('.relative').remove()" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
+            <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Tem certeza que deseja remover este guia em texto?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-destructive hover:border-destructive w-6 h-6"><i class="fas fa-times text-xs"></i></button>
         `;
         container.appendChild(newTutorial);
     }
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     div.innerHTML = `
                         <img src="${e.target.result}" class="aspect-video w-full rounded-md object-cover">
                         <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <button type="button" onclick="this.closest('.relative').remove()" class="text-white"><i class="fas fa-trash"></i></button>
+                            <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Remover esta imagem?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="text-white"><i class="fas fa-trash"></i></button>
                         </div>
                         <input type="text" name="interface_image_names" class="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Nome da tela (opcional)">
                     `;
@@ -437,7 +437,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Lógica para remover imagens existentes
+    window.confirmAndRemoveClosest = function(button, selector, message) {
+        const ok = window.confirm(message || 'Tem certeza?');
+        if (!ok) return;
+        const el = button && button.closest ? button.closest(selector || '.relative') : null;
+        if (el) el.remove();
+    }
+
     function removeImage(button, imageUrl, fileName) {
+        const ok = window.confirm('Remover esta imagem?\\n\\nVocê precisa salvar para confirmar a exclusão.');
+        if (!ok) return;
         const imageDiv = button.closest('.existing-image');
         if (imageDiv) {
             imageDiv.style.display = 'none'; // Esconde a imagem
