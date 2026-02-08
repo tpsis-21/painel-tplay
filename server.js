@@ -12,7 +12,9 @@ const app = express();
 // Hostinger Shared Hosting Node.js Selector usually looks for a file like 'app.js' or 'index.js'
 // and the server should be exported or started.
 const PORT = process.env.PORT || 3002;
-const HOST = '127.0.0.1'; // Essential for some shared hosting environments
+// Host de bind do servidor. Em plataformas tipo EasyPanel/Nixpacks,
+// 0.0.0.0 é o mais seguro para aceitar conexões externas.
+const HOST = process.env.HOST || '0.0.0.0';
 const BASE_URL = process.env.BASE_URL || 'https://ajuda.tplay21.in';
 
 // --- CONFIGURAÇÃO DE DIRETÓRIOS (CAMINHOS ABSOLUTOS) ---
@@ -34,6 +36,10 @@ fs.ensureDirSync(path.dirname(DATA_FILE));
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'changeme';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'change-me-in-production';
+const FORCE_HTTPS = process.env.FORCE_HTTPS === 'true';
+// Por padrão NÃO força cookie secure; isso é controlado apenas via env.
+// Em produção, defina COOKIE_SECURE=true no painel se o app estiver atrás de HTTPS.
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
 
 function loadApps() {
     try {
@@ -137,14 +143,26 @@ const upload = multer({ storage: storage });
 app.set('port', PORT);
 app.set('view engine', 'ejs');
 app.set('views', VIEWS_DIR);
+app.set('trust proxy', 1);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(PUBLIC_DIR));
+if (FORCE_HTTPS) {
+    app.use((req, res, next) => {
+        const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+        if (proto !== 'https') {
+            const host = req.headers.host;
+            const url = `https://${host}${req.originalUrl}`;
+            return res.redirect(301, url);
+        }
+        next();
+    });
+}
 app.use(session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: COOKIE_SECURE,
         httpOnly: true
     }
 }));
@@ -157,14 +175,16 @@ function ensureAuthenticated(req, res, next) {
     if (req.session && req.session.user) {
         return next();
     }
-    res.redirect('/login');
+    res.redirect('/login?msg=auth');
 }
 
 app.get('/login', (req, res) => {
     if (req.session && req.session.user) {
         return res.redirect('/painel');
     }
-    res.render('login', { error: null });
+    const msg = req.query && req.query.msg;
+    const error = msg === 'auth' ? 'Sua sessão expirou ou você não está autenticado.' : null;
+    res.render('login', { error });
 });
 
 app.post('/login', (req, res) => {
@@ -174,6 +194,7 @@ app.post('/login', (req, res) => {
         req.session.user = { name: username };
         return res.redirect('/painel');
     }
+    console.warn('Falha de login: usuário ou senha inválidos');
     res.status(401).render('login', { error: 'Credenciais inválidas' });
 });
 
