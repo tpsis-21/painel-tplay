@@ -171,6 +171,10 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/healthz', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 function ensureAuthenticated(req, res, next) {
     if (req.session && req.session.user) {
         return next();
