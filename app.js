@@ -1,9 +1,8 @@
 const app = require('./server');
-const findFreePort = require('find-free-port');
 
-findFreePort(3000, (err, freePort) => {
-    if (err) throw err;
-    app.listen(freePort, () => {
-        console.log(`Servidor iniciado na porta ${freePort}`);
-    });
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+    console.log(`Servidor iniciado em http://${HOST}:${PORT}`);
 });
