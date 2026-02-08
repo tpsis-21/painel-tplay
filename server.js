@@ -33,13 +33,20 @@ fs.ensureDirSync(UPLOADS_DIR);
 fs.ensureDirSync(APPS_DIR);
 fs.ensureDirSync(path.dirname(DATA_FILE));
 
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'changeme';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'change-me-in-production';
+const ADMIN_USER = (process.env.ADMIN_USER || 'admin').trim();
+const ADMIN_PASS = (process.env.ADMIN_PASS || 'changeme').trim();
+const SESSION_SECRET = (process.env.SESSION_SECRET || 'change-me-in-production').trim();
 const FORCE_HTTPS = process.env.FORCE_HTTPS === 'true';
 // Por padrão NÃO força cookie secure; isso é controlado apenas via env.
 // Em produção, defina COOKIE_SECURE=true no painel se o app estiver atrás de HTTPS.
 const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
+
+if (SESSION_SECRET === 'change-me-in-production') {
+    console.warn('SESSION_SECRET está usando valor padrão. Defina SESSION_SECRET em produção.');
+}
+if (ADMIN_USER.toLowerCase() === 'admin' && ADMIN_PASS === 'changeme') {
+    console.warn('ADMIN_USER/ADMIN_PASS estão com valores padrão. Defina credenciais fortes em produção.');
+}
 
 function loadApps() {
     try {
@@ -194,14 +201,16 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    const username = req.body.username || '';
-    const password = req.body.password || '';
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password.trim() : '';
+    const usernameOk = username.length > 0 && username.toLowerCase() === ADMIN_USER.toLowerCase();
+    const passwordOk = password === ADMIN_PASS;
+    if (usernameOk && passwordOk) {
         req.session.user = { name: username };
         return res.redirect('/painel');
     }
     console.warn('Falha de login: usuário ou senha inválidos');
-    res.status(401).render('login', { error: 'Credenciais inválidas' });
+    res.status(401).render('login', { error: 'Credenciais inválidas. Verifique ADMIN_USER/ADMIN_PASS no ambiente.' });
 });
 
 app.post('/logout', (req, res) => {
