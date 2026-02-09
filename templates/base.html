@@ -254,7 +254,7 @@
         <!-- Seletor de Dispositivo -->
         <section class="bg-card border border-border rounded-xl p-6 md:p-8">
             <h2 class="text-2xl font-bold mb-6 text-card-foreground">📱 Selecione seu dispositivo:</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
                 <button class="device-button bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="android-section">
                     <i class="fas fa-mobile-alt"></i>
                     <span>Celular Android</span>
@@ -270,6 +270,22 @@
                 <button class="device-button bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="tvbox-section">
                     <i class="fas fa-cube"></i>
                     <span>TV Box / Receptores / Projetores</span>
+                </button>
+                <button class="device-button bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="samsung-section">
+                    <i class="fas fa-tv"></i>
+                    <span>Samsung (Tizen)</span>
+                </button>
+                <button class="device-button bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="lg-section">
+                    <i class="fas fa-tv"></i>
+                    <span>LG (webOS)</span>
+                </button>
+                <button class="device-button bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="roku-section">
+                    <i class="fas fa-tv"></i>
+                    <span>Roku</span>
+                </button>
+                <button class="device-button bg-muted text-muted-foreground hover:bg-muted/80 px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2" data-target="pc-section">
+                    <i class="fas fa-desktop"></i>
+                    <span>PC / Notebook</span>
                 </button>
             </div>
         </section>
@@ -452,6 +468,62 @@
                     {{browser_download_tutorial_button}}
                 </div>
             </section>
+        </section>
+
+        <!-- Seção Smart TV Samsung -->
+        <section id="samsung-section" class="device-section bg-card border border-border rounded-xl p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-card-foreground">📺 Smart TV Samsung (Tizen)</h2>
+            <p class="text-muted-foreground mb-6">
+                TVs Samsung (Tizen) não instalam APK. Se existir uma versão oficial para Samsung, instale pela loja da TV.
+            </p>
+            <div class="space-y-4">
+                <h3 class="font-semibold text-card-foreground">📋 Como instalar:</h3>
+                <ol class="space-y-2 text-muted-foreground">
+                    {{samsung_steps}}
+                </ol>
+            </div>
+        </section>
+
+        <!-- Seção Smart TV LG -->
+        <section id="lg-section" class="device-section bg-card border border-border rounded-xl p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-card-foreground">📺 Smart TV LG (webOS)</h2>
+            <p class="text-muted-foreground mb-6">
+                TVs LG (webOS) não instalam APK. Se existir uma versão oficial para LG, instale pela loja da TV.
+            </p>
+            <div class="space-y-4">
+                <h3 class="font-semibold text-card-foreground">📋 Como instalar:</h3>
+                <ol class="space-y-2 text-muted-foreground">
+                    {{lg_steps}}
+                </ol>
+            </div>
+        </section>
+
+        <!-- Seção Smart TV Roku -->
+        <section id="roku-section" class="device-section bg-card border border-border rounded-xl p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-card-foreground">📺 Smart TV Roku</h2>
+            <p class="text-muted-foreground mb-6">
+                TVs Roku não instalam APK. Se existir um canal oficial, ele fica disponível na Roku Channel Store.
+            </p>
+            <div class="space-y-4">
+                <h3 class="font-semibold text-card-foreground">📋 Como acessar:</h3>
+                <ol class="space-y-2 text-muted-foreground">
+                    {{roku_steps}}
+                </ol>
+            </div>
+        </section>
+
+        <!-- Seção PC / Notebook -->
+        <section id="pc-section" class="device-section bg-card border border-border rounded-xl p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-card-foreground">💻 PC / Notebook</h2>
+            <p class="text-muted-foreground mb-6">
+                Este app é distribuído em APK (Android) e não roda diretamente no Windows/macOS. Para usar no PC, a opção mais comum é um emulador Android.
+            </p>
+            <div class="space-y-4">
+                <h3 class="font-semibold text-card-foreground">📋 Como usar:</h3>
+                <ol class="space-y-2 text-muted-foreground">
+                    {{pc_steps}}
+                </ol>
+            </div>
         </section>
         
         
@@ -977,11 +1049,17 @@
                 defaultSection.style.display = 'block';
             }
 
-            // Ativar botão Android Mobile por padrão
-            const androidButton = document.querySelector('[data-target="android-section"]');
-            if (androidButton) {
-                androidButton.classList.remove('bg-muted', 'text-muted-foreground');
-                androidButton.classList.add('bg-primary', 'text-primary-foreground');
+            const defaultDeviceId = '{{default_device}}';
+            const defaultButton = defaultDeviceId ? document.querySelector(`[data-target="${defaultDeviceId}"]`) : null;
+            const fallbackButton = document.querySelector('[data-target="android-section"]');
+            const buttonToActivate = defaultButton || fallbackButton;
+            if (buttonToActivate) {
+                deviceButtons.forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-primary-foreground');
+                    btn.classList.add('bg-muted', 'text-muted-foreground');
+                });
+                buttonToActivate.classList.remove('bg-muted', 'text-muted-foreground');
+                buttonToActivate.classList.add('bg-primary', 'text-primary-foreground');
             }
 
             const lightbox = document.getElementById('lightbox');

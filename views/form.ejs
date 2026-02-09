@@ -193,10 +193,12 @@
                         <% if (app && app.interface_images) { 
                             const names = app.interface_image_names || [];
                             app.interface_images.forEach((img, idx) => { %>
-                            <div class="relative group existing-image" data-image-url="<%= img %>">
-                                <img src="<%= img %>" class="aspect-video w-full rounded-md object-cover">
-                                <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <button type="button" onclick="window.removeImage(this, '<%= img %>', '<%= img.split('/').pop() %>')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-white hover:text-destructive"><i class="fas fa-trash"></i></button>
+                            <div class="group existing-image" data-image-url="<%= img %>">
+                                <div class="relative">
+                                    <img src="<%= img %>" class="aspect-video w-full rounded-md object-cover">
+                                    <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+                                        <button type="button" onclick="window.removeImage(this, '<%= img %>', '<%= img.split('/').pop() %>')" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input bg-background hover:bg-accent hover:text-accent-foreground text-white hover:text-destructive"><i class="fas fa-trash"></i></button>
+                                    </div>
                                 </div>
                                 <input type="hidden" name="existing_interface_images" value="<%= img %>">
                                 <input type="text" name="existing_interface_image_names" value="<%= names[idx] || '' %>" class="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Nome da tela (opcional)">
@@ -229,6 +231,74 @@
                             <p><strong>Atualizado:</strong> <%= app.updatedAt ? new Date(app.updatedAt).toLocaleDateString('pt-BR') : '-' %></p>
                         </div>
                     <% } %>
+                </div>
+            </div>
+
+            <!-- Card de Dispositivos Compatíveis -->
+            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div class="p-6">
+                    <h3 class="font-semibold tracking-tight">Dispositivos Compatíveis</h3>
+                    <p class="text-sm text-muted-foreground">Selecione onde este app é suportado.</p>
+                </div>
+                <div class="p-6 pt-0 space-y-3">
+                    <% const devs = app && app.compatibleDevices ? app.compatibleDevices : ['android','androidtv','firestick','tvbox']; %>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="android" <%= devs.includes('android') ? 'checked' : '' %>>
+                        <span>Celular Android</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="androidtv" <%= devs.includes('androidtv') ? 'checked' : '' %>>
+                        <span>Android TV / Mi Stick</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="firestick" <%= devs.includes('firestick') ? 'checked' : '' %>>
+                        <span>Fire Stick</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="tvbox" <%= devs.includes('tvbox') ? 'checked' : '' %>>
+                        <span>TV Box / Receptores / Projetores</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="samsung" <%= devs.includes('samsung') ? 'checked' : '' %>>
+                        <span>Smart TV Samsung (Tizen)</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="lg" <%= devs.includes('lg') ? 'checked' : '' %>>
+                        <span>Smart TV LG (webOS)</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="roku" <%= devs.includes('roku') ? 'checked' : '' %>>
+                        <span>Smart TV Roku</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="devices" value="pc" <%= devs.includes('pc') ? 'checked' : '' %>>
+                        <span>PC / Notebook</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="instructions-card" class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div class="p-6">
+                    <h3 class="font-semibold tracking-tight">Instruções por Dispositivo</h3>
+                    <p class="text-sm text-muted-foreground">Opcional. Uma linha por passo (ordem importa).</p>
+                </div>
+                <div class="p-6 pt-0 space-y-4">
+                    <div id="instructions-samsung" class="space-y-2">
+                        <label class="text-sm font-medium">Smart TV Samsung (Tizen)</label>
+                        <textarea name="device_instructions_samsung" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex:\nAcesse a loja de aplicativos da sua TV\nProcure por &quot;<%= app ? app.name : 'Nome do app' %>&quot;\nClique em &quot;Instalar&quot;\nAguarde a instalação e abra o aplicativo"><%= app && app.deviceInstructions ? (app.deviceInstructions.samsung || '') : '' %></textarea>
+                    </div>
+                    <div id="instructions-lg" class="space-y-2">
+                        <label class="text-sm font-medium">Smart TV LG (webOS)</label>
+                        <textarea name="device_instructions_lg" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex:\nAcesse a loja de aplicativos da sua TV\nProcure por &quot;<%= app ? app.name : 'Nome do app' %>&quot;\nClique em &quot;Instalar&quot;\nAguarde a instalação e abra o aplicativo"><%= app && app.deviceInstructions ? (app.deviceInstructions.lg || '') : '' %></textarea>
+                    </div>
+                    <div id="instructions-roku" class="space-y-2">
+                        <label class="text-sm font-medium">Smart TV Roku</label>
+                        <textarea name="device_instructions_roku" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex:\nAcesse a loja de aplicativos da sua TV\nProcure por &quot;<%= app ? app.name : 'Nome do app' %>&quot;\nClique em &quot;Instalar&quot;\nAguarde a instalação e abra o aplicativo"><%= app && app.deviceInstructions ? (app.deviceInstructions.roku || '') : '' %></textarea>
+                    </div>
+                    <div id="instructions-pc" class="space-y-2">
+                        <label class="text-sm font-medium">PC / Notebook</label>
+                        <textarea name="device_instructions_pc" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Ex:\nInstale um emulador Android\nBaixe o APK\nAbra no emulador e instale"><%= app && app.deviceInstructions ? (app.deviceInstructions.pc || '') : '' %></textarea>
+                    </div>
                 </div>
             </div>
             
@@ -276,39 +346,37 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Card de Dispositivos Compatíveis -->
-            <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div class="p-6">
-                    <h3 class="font-semibold tracking-tight">Dispositivos Compatíveis</h3>
-                    <p class="text-sm text-muted-foreground">Selecione onde este app é suportado.</p>
-                </div>
-                <div class="p-6 pt-0 space-y-3">
-                    <% const devs = app && app.compatibleDevices ? app.compatibleDevices : ['android','androidtv','firestick','tvbox']; %>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="devices" value="android" <%= devs.includes('android') ? 'checked' : '' %>>
-                        <span>Celular Android</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="devices" value="androidtv" <%= devs.includes('androidtv') ? 'checked' : '' %>>
-                        <span>Android TV / Mi Stick</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="devices" value="firestick" <%= devs.includes('firestick') ? 'checked' : '' %>>
-                        <span>Fire Stick</span>
-                    </label>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="devices" value="tvbox" <%= devs.includes('tvbox') ? 'checked' : '' %>>
-                        <span>TV Box / Receptores / Projetores</span>
-                    </label>
-                </div>
-            </div>
         </div>
     </div>
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function syncInstructionVisibility() {
+        const selected = new Set(
+            Array.from(document.querySelectorAll('input[name="devices"]:checked')).map(i => i.value)
+        );
+        const instructionsCard = document.getElementById('instructions-card');
+        const showInstructionsCard = selected.has('samsung') || selected.has('lg') || selected.has('roku') || selected.has('pc');
+        if (instructionsCard) instructionsCard.style.display = showInstructionsCard ? '' : 'none';
+
+        const map = [
+            ['samsung', 'instructions-samsung'],
+            ['lg', 'instructions-lg'],
+            ['roku', 'instructions-roku'],
+            ['pc', 'instructions-pc']
+        ];
+        map.forEach(([device, id]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = selected.has(device) ? '' : 'none';
+        });
+    }
+
+    const deviceInputs = document.querySelectorAll('input[name="devices"]');
+    deviceInputs.forEach(i => i.addEventListener('change', syncInstructionVisibility));
+    syncInstructionVisibility();
+
     // Lógica para adicionar tutoriais em vídeo
     function addVideoTutorial() {
         const container = document.getElementById('video-tutorials-container');
@@ -409,11 +477,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 reader.onload = (e) => {
                     const div = document.createElement('div');
-                    div.className = 'relative group new-image';
+                    div.className = 'group new-image';
                     div.innerHTML = `
-                        <img src="${e.target.result}" class="aspect-video w-full rounded-md object-cover">
-                        <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <button type="button" onclick="window.confirmAndRemoveClosest(this, '.relative', 'Remover esta imagem?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="text-white"><i class="fas fa-trash"></i></button>
+                        <div class="relative">
+                            <img src="${e.target.result}" class="aspect-video w-full rounded-md object-cover">
+                            <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+                                <button type="button" onclick="window.confirmAndRemoveClosest(this, '.new-image', 'Remover esta imagem?\\n\\nVocê precisa salvar para confirmar a exclusão.')" class="text-white"><i class="fas fa-trash"></i></button>
+                            </div>
                         </div>
                         <input type="text" name="interface_image_names" class="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Nome da tela (opcional)">
                     `;

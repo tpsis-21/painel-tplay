@@ -439,6 +439,18 @@ app.post('/save', ensureAuthenticated, upload.fields([
         const allDevicesDefault = ['android','androidtv','firestick','tvbox'];
         appData.compatibleDevices = Array.isArray(devicesField) ? devicesField : (devicesField ? [devicesField] : allDevicesDefault);
 
+        const existingDeviceInstructions = appData.deviceInstructions && typeof appData.deviceInstructions === 'object'
+            ? appData.deviceInstructions
+            : {};
+        const readInstructionsField = (value) => (typeof value === 'string' ? value.trim() : '');
+        appData.deviceInstructions = {
+            ...existingDeviceInstructions,
+            samsung: readInstructionsField(req.body.device_instructions_samsung),
+            lg: readInstructionsField(req.body.device_instructions_lg),
+            roku: readInstructionsField(req.body.device_instructions_roku),
+            pc: readInstructionsField(req.body.device_instructions_pc)
+        };
+
         // Código NTDown (TV Box) - compatibilidade retroativa
         appData.ntdownCode = appData.ntdownCode || appData.tvboxCode || '';
         appData.browserDownloadUrl = appData.browserDownloadUrl || '';
@@ -678,7 +690,11 @@ async function generateAppPage(appData) {
         android: 'Celular Android',
         androidtv: 'Android TV / Mi Stick',
         firestick: 'Fire Stick',
-        tvbox: 'TV Box / Receptores / Projetores'
+        tvbox: 'TV Box / Receptores / Projetores',
+        samsung: 'Smart TV Samsung (Tizen)',
+        lg: 'Smart TV LG (webOS)',
+        roku: 'Smart TV Roku',
+        pc: 'PC / Notebook'
     };
     const compatItems = devicesList.map(d => labels[d]).filter(Boolean);
     const compatText = compatItems.length > 1
@@ -694,8 +710,45 @@ async function generateAppPage(appData) {
         .replace(/{{app_description}}/g, appDesc)
         .replace(/{{meta_description}}/g, metaDesc);
 
+    const deviceInstructions = appData && appData.deviceInstructions && typeof appData.deviceInstructions === 'object'
+        ? appData.deviceInstructions
+        : {};
+    const buildStepsHtml = (raw, fallbackLines) => {
+        const lines = (typeof raw === 'string' ? raw.split(/\r?\n/) : [])
+            .map(l => l.trim())
+            .filter(Boolean);
+        const finalLines = lines.length > 0 ? lines : (fallbackLines || []);
+        return finalLines.map((text, idx) => `
+            <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">${idx + 1}</span> ${text}</li>
+        `).join('');
+    };
+    finalHtml = finalHtml
+        .replace(/{{samsung_steps}}/g, buildStepsHtml(deviceInstructions.samsung, [
+            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
+            `Procure por "<strong>${appData.name}</strong>"`,
+            'Clique em <strong>"Instalar"</strong>',
+            'Aguarde a instalação e abra o aplicativo'
+        ]))
+        .replace(/{{lg_steps}}/g, buildStepsHtml(deviceInstructions.lg, [
+            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
+            `Procure por "<strong>${appData.name}</strong>"`,
+            'Clique em <strong>"Instalar"</strong>',
+            'Aguarde a instalação e abra o aplicativo'
+        ]))
+        .replace(/{{roku_steps}}/g, buildStepsHtml(deviceInstructions.roku, [
+            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
+            `Procure por "<strong>${appData.name}</strong>"`,
+            'Clique em <strong>"Instalar"</strong>',
+            'Aguarde a instalação e abra o aplicativo'
+        ]))
+        .replace(/{{pc_steps}}/g, buildStepsHtml(deviceInstructions.pc, [
+            'Instale um emulador Android confiável',
+            'Baixe o APK pelo navegador e abra no emulador',
+            'Conclua a instalação e abra o app'
+        ]));
+
     // Remover botões/Seções de dispositivos não compatíveis
-    const allDevices = ['android','androidtv','firestick','tvbox'];
+    const allDevices = ['android','androidtv','firestick','tvbox','samsung','lg','roku','pc'];
     for (const dev of allDevices) {
         if (!devicesList.includes(dev)) {
             const sectionId = `${dev}-section`;
