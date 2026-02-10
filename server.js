@@ -7,6 +7,7 @@ const slugify = require('slugify');
 const multer = require('multer');
 const ejs = require('ejs');
 const session = require('express-session');
+const crypto = require('crypto');
 
 const app = express();
 // Hostinger Shared Hosting Node.js Selector usually looks for a file like 'app.js' or 'index.js'
@@ -17,21 +18,37 @@ const PORT = process.env.PORT || 3002;
 const HOST = process.env.HOST || '0.0.0.0';
 const BASE_URL = process.env.BASE_URL || 'https://ajuda.tplay21.in';
 
-// --- CONFIGURAÇÃO DE DIRETÓRIOS (CAMINHOS ABSOLUTOS) ---
 const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
-const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 const APPS_DIR = path.join(PUBLIC_DIR, 'apps');
-const DATA_FILE = path.join(ROOT_DIR, 'data', 'apps.json');
-const GLOBAL_TUTORIALS_FILE = path.join(ROOT_DIR, 'data', 'global_tutorials.json');
-const SETTINGS_FILE = path.join(ROOT_DIR, 'data', 'settings.json');
 const VIEWS_DIR = path.join(ROOT_DIR, 'views');
 const TEMPLATES_DIR = path.join(ROOT_DIR, 'templates');
 
-// Garantir que os diretórios necessários existam
-fs.ensureDirSync(UPLOADS_DIR);
+function resolveAbsoluteDirFromEnv(value) {
+    if (typeof value !== 'string') return '';
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+    return path.isAbsolute(trimmed) ? trimmed : path.resolve(ROOT_DIR, trimmed);
+}
+
+const STORAGE_DIR = resolveAbsoluteDirFromEnv(process.env.TPLAY_STORAGE_DIR) || path.resolve(ROOT_DIR, '..', 'tplay-storage');
+const DATA_DIR = resolveAbsoluteDirFromEnv(process.env.TPLAY_DATA_DIR) || path.join(STORAGE_DIR, 'data');
+const UPLOADS_DIR = resolveAbsoluteDirFromEnv(process.env.TPLAY_UPLOADS_DIR) || path.join(STORAGE_DIR, 'uploads');
+
+const DATA_FILE = path.join(DATA_DIR, 'apps.json');
+const GLOBAL_TUTORIALS_FILE = path.join(DATA_DIR, 'global_tutorials.json');
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+
+const LEGACY_DATA_DIR = path.join(ROOT_DIR, 'data');
+const LEGACY_UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
+const LEGACY_DATA_FILE = path.join(LEGACY_DATA_DIR, 'apps.json');
+const LEGACY_GLOBAL_TUTORIALS_FILE = path.join(LEGACY_DATA_DIR, 'global_tutorials.json');
+const LEGACY_SETTINGS_FILE = path.join(LEGACY_DATA_DIR, 'settings.json');
+
+fs.ensureDirSync(PUBLIC_DIR);
 fs.ensureDirSync(APPS_DIR);
-fs.ensureDirSync(path.dirname(DATA_FILE));
+fs.ensureDirSync(DATA_DIR);
+fs.ensureDirSync(UPLOADS_DIR);
 
 const ADMIN_USER = (process.env.ADMIN_USER || 'admin').trim();
 const ADMIN_PASS = (process.env.ADMIN_PASS || 'changeme').trim();
@@ -47,6 +64,60 @@ if (SESSION_SECRET === 'change-me-in-production') {
 if (ADMIN_USER.toLowerCase() === 'admin' && ADMIN_PASS === 'changeme') {
     console.warn('ADMIN_USER/ADMIN_PASS estão com valores padrão. Defina credenciais fortes em produção.');
 }
+
+function readJsonSafe(filePath, fallbackValue) {
+    try {
+        return fs.readJsonSync(filePath);
+    } catch (error) {
+        return fallbackValue;
+    }
+}
+
+function shouldMigrateJsonFile(fromPath, toPath) {
+    if (!fs.existsSync(fromPath)) return false;
+    if (!fs.existsSync(toPath)) return true;
+
+    const from = readJsonSafe(fromPath, null);
+    const to = readJsonSafe(toPath, null);
+
+    const fromIsNonEmptyArray = Array.isArray(from) && from.length > 0;
+    const toIsEmptyArray = Array.isArray(to) && to.length === 0;
+    if (fromIsNonEmptyArray && toIsEmptyArray) return true;
+
+    const fromIsObject = from && typeof from === 'object' && !Array.isArray(from);
+    const toIsEmptyObject = to && typeof to === 'object' && !Array.isArray(to) && Object.keys(to).length === 0;
+    if (fromIsObject && toIsEmptyObject) return true;
+
+    return false;
+}
+
+function migrateJsonFileIfNeeded(fromPath, toPath) {
+    if (!shouldMigrateJsonFile(fromPath, toPath)) return;
+    fs.ensureDirSync(path.dirname(toPath));
+    fs.copySync(fromPath, toPath, { overwrite: true });
+}
+
+function dirHasUserFiles(dirPath) {
+    try {
+        if (!fs.existsSync(dirPath)) return false;
+        const entries = fs.readdirSync(dirPath);
+        return entries.some(name => name !== '.gitkeep');
+    } catch (error) {
+        return false;
+    }
+}
+
+function migrateUploadsDirIfNeeded(fromDir, toDir) {
+    if (!dirHasUserFiles(fromDir)) return;
+    if (dirHasUserFiles(toDir)) return;
+    fs.ensureDirSync(toDir);
+    fs.copySync(fromDir, toDir, { overwrite: false, errorOnExist: false });
+}
+
+migrateJsonFileIfNeeded(LEGACY_DATA_FILE, DATA_FILE);
+migrateJsonFileIfNeeded(LEGACY_GLOBAL_TUTORIALS_FILE, GLOBAL_TUTORIALS_FILE);
+migrateJsonFileIfNeeded(LEGACY_SETTINGS_FILE, SETTINGS_FILE);
+migrateUploadsDirIfNeeded(LEGACY_UPLOADS_DIR, UPLOADS_DIR);
 
 function loadApps() {
     try {
@@ -95,7 +166,8 @@ function defaultSettings() {
             videoDownloaderUrl: '',
             videoNtDownUrl: '',
             videoBrowserDownloadUrl: ''
-        }
+        },
+        adminAuth: null
     };
 }
 
@@ -109,7 +181,8 @@ function loadSettings() {
             universalTutorials: {
                 ...defaults.universalTutorials,
                 ...(fileSettings && fileSettings.universalTutorials ? fileSettings.universalTutorials : {})
-            }
+            },
+            adminAuth: fileSettings && typeof fileSettings.adminAuth !== 'undefined' ? fileSettings.adminAuth : defaults.adminAuth
         };
     } catch (error) {
         return defaultSettings();
@@ -131,6 +204,83 @@ if (!fs.existsSync(GLOBAL_TUTORIALS_FILE)) {
 if (!fs.existsSync(SETTINGS_FILE)) {
     saveSettings(defaultSettings());
 }
+
+function buildPasswordHashRecord(password) {
+    const iterations = 120000;
+    const digest = 'sha256';
+    const keylen = 32;
+    const salt = crypto.randomBytes(16);
+    const hash = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest);
+    return {
+        iterations,
+        digest,
+        keylen,
+        salt: salt.toString('base64'),
+        hash: hash.toString('base64')
+    };
+}
+
+function verifyPasswordHashRecord(password, record) {
+    if (!record || typeof record !== 'object') return false;
+    if (typeof record.salt !== 'string' || typeof record.hash !== 'string') return false;
+    const iterations = Number(record.iterations) || 120000;
+    const digest = typeof record.digest === 'string' ? record.digest : 'sha256';
+    const keylen = Number(record.keylen) || 32;
+    const salt = Buffer.from(record.salt, 'base64');
+    const expectedHash = Buffer.from(record.hash, 'base64');
+    const actualHash = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest);
+    if (actualHash.length !== expectedHash.length) return false;
+    return crypto.timingSafeEqual(actualHash, expectedHash);
+}
+
+function syncAdminFromEnvToSettings() {
+    const envUser = (process.env.ADMIN_USER || 'admin').trim();
+    const envPass = (process.env.ADMIN_PASS || 'changeme').trim();
+    const envIsDefault = envUser.toLowerCase() === 'admin' && envPass === 'changeme';
+    if (envIsDefault) return;
+
+    const current = loadSettings();
+    const currentAuth = current && current.adminAuth ? current.adminAuth : null;
+    const alreadyHasSameUser = currentAuth && typeof currentAuth.username === 'string' && currentAuth.username.trim().toLowerCase() === envUser.toLowerCase();
+    if (alreadyHasSameUser && currentAuth && verifyPasswordHashRecord(envPass, currentAuth)) return;
+
+    const next = {
+        ...current,
+        adminAuth: {
+            username: envUser,
+            ...buildPasswordHashRecord(envPass)
+        }
+    };
+    saveSettings(next);
+}
+
+function getAdminAuth() {
+    const envUser = (process.env.ADMIN_USER || 'admin').trim();
+    const envPass = (process.env.ADMIN_PASS || 'changeme').trim();
+    const envIsDefault = envUser.toLowerCase() === 'admin' && envPass === 'changeme';
+    if (!envIsDefault) {
+        return {
+            username: envUser,
+            verify: (password) => password === envPass
+        };
+    }
+
+    const settings = loadSettings();
+    const auth = settings && settings.adminAuth ? settings.adminAuth : null;
+    if (auth && typeof auth.username === 'string' && auth.username.trim()) {
+        return {
+            username: auth.username.trim(),
+            verify: (password) => verifyPasswordHashRecord(password, auth)
+        };
+    }
+
+    return {
+        username: envUser,
+        verify: (password) => password === envPass
+    };
+}
+
+syncAdminFromEnvToSettings();
 
 // --- CONFIGURAÇÃO DE UPLOAD (MULTER) ---
 const storage = multer.diskStorage({
@@ -154,6 +304,7 @@ app.set('view engine', 'ejs');
 app.set('views', VIEWS_DIR);
 app.set('trust proxy', 1);
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(PUBLIC_DIR));
 if (FORCE_HTTPS) {
     app.use((req, res, next) => {
@@ -203,14 +354,15 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
     const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
     const password = typeof req.body.password === 'string' ? req.body.password.trim() : '';
-    const usernameOk = username.length > 0 && username.toLowerCase() === ADMIN_USER.toLowerCase();
-    const passwordOk = password === ADMIN_PASS;
+    const auth = getAdminAuth();
+    const usernameOk = username.length > 0 && username.toLowerCase() === auth.username.toLowerCase();
+    const passwordOk = auth.verify(password);
     if (usernameOk && passwordOk) {
         req.session.user = { name: username };
         return res.redirect('/painel');
     }
     console.warn('Falha de login: usuário ou senha inválidos');
-    res.status(401).render('login', { error: 'Credenciais inválidas. Verifique ADMIN_USER/ADMIN_PASS no ambiente.' });
+    res.status(401).render('login', { error: 'Credenciais inválidas. Verifique as variáveis do ambiente ou as credenciais persistidas.' });
 });
 
 app.post('/logout', (req, res) => {
