@@ -427,6 +427,23 @@ app.get('/tutorial', (req, res) => {
     }
 });
 
+app.get('/tutorial/global/:slug', (req, res) => {
+    try {
+        const slug = typeof req.params.slug === 'string' ? req.params.slug.trim() : '';
+        if (!slug) return res.status(404).send('Tutorial não encontrado.');
+
+        const tutorials = loadGlobalTutorials();
+        const tutorial = tutorials.find(t => String(t.slug || '').trim() === slug);
+        if (!tutorial) return res.status(404).send('Tutorial não encontrado.');
+
+        const publicUrl = `${BASE_URL}/tutorial/global/${tutorial.slug}`;
+        res.render('tutorial_global_view', { tutorial, publicUrl });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erro ao carregar tutorial.');
+    }
+});
+
 // --- ROTAS DO PAINEL ADMINISTRATIVO ---
 
 app.get('/painel', ensureAuthenticated, (req, res) => {
