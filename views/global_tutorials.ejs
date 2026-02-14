@@ -196,10 +196,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.confirmRemoveGlobalTutorial = function(button, title) {
     const name = (title || '').trim();
-    const ok = window.confirm(`Tem certeza que deseja remover este tutorial${name ? `: "${name}"` : ''}?\\n\\nVocê precisa salvar para confirmar a exclusão.`);
-    if (!ok) return;
-    const card = button && button.closest ? button.closest('.global-tutorial-card') : null;
-    if (card) card.remove();
+    const description = `Tem certeza que deseja remover este tutorial${name ? `: "${name}"` : ''}?\n\nVocê precisa salvar para confirmar a exclusão.`;
+    if (!window.tplayConfirm) return;
+    window.tplayConfirm({
+        title: 'Remover tutorial',
+        description,
+        confirmText: 'Remover',
+        onConfirm: function () {
+            const card = button && button.closest ? button.closest('.global-tutorial-card') : null;
+            if (card) card.remove();
+        }
+    });
 }
 
 function copiarLinkTutorial(url) {

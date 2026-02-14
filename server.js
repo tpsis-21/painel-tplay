@@ -121,7 +121,27 @@ migrateUploadsDirIfNeeded(LEGACY_UPLOADS_DIR, UPLOADS_DIR);
 
 function loadApps() {
     try {
-        return fs.readJsonSync(DATA_FILE);
+        const raw = fs.readJsonSync(DATA_FILE);
+        const list = Array.isArray(raw) ? raw : [];
+        return list
+            .map((app) => {
+                if (!app || typeof app !== 'object') return null;
+                const normalized = { ...app };
+                if (!normalized.slug && typeof normalized.name === 'string' && normalized.name.trim()) {
+                    normalized.slug = slugify(normalized.name, { lower: true, strict: true });
+                }
+                if (!normalized.downloadUrl && typeof normalized.download_url === 'string') {
+                    normalized.downloadUrl = normalized.download_url.trim();
+                }
+                if (!normalized.logo && typeof normalized.logo_url === 'string') {
+                    normalized.logo = normalized.logo_url.trim();
+                }
+                if (!normalized.ntdownCode && (normalized.tvboxCode || normalized.tvbox_code)) {
+                    normalized.ntdownCode = normalized.tvboxCode || normalized.tvbox_code || '';
+                }
+                return normalized;
+            })
+            .filter(Boolean);
     } catch (error) {
         return [];
     }
@@ -348,7 +368,18 @@ app.get('/login', (req, res) => {
     }
     const msg = req.query && req.query.msg;
     const error = msg === 'auth' ? 'Sua sessão expirou ou você não está autenticado.' : null;
-    res.render('login', { error });
+    let hint = null;
+    try {
+        const envUser = (process.env.ADMIN_USER || 'admin').trim();
+        const envPass = (process.env.ADMIN_PASS || 'changeme').trim();
+        const envIsDefault = envUser.toLowerCase() === 'admin' && envPass === 'changeme';
+        const settings = loadSettings();
+        const hasStoredAuth = !!(settings && settings.adminAuth && typeof settings.adminAuth.username === 'string' && settings.adminAuth.username.trim());
+        if (process.env.NODE_ENV !== 'production' && envIsDefault && !hasStoredAuth) {
+            hint = `Credenciais locais padrão: usuário "${envUser}" e senha "${envPass}". Para alterar, defina ADMIN_USER e ADMIN_PASS no ambiente (.env).`;
+        }
+    } catch {}
+    res.render('login', { error, hint });
 });
 
 app.post('/login', (req, res) => {
@@ -377,7 +408,7 @@ app.post('/logout', (req, res) => {
 
 // --- ROTAS DO SITE PÚBLICO ---
 
-app.get('/:slug', (req, res, next) => {
+app.get('/:slug', async (req, res, next) => {
     const { slug } = req.params;
     const reserved = ['painel', 'tutorial', 'new', 'save', 'edit', 'delete', 'uploads', 'apps', 'delete-image', 'favicon.ico', 'login', 'logout'];
     if (reserved.includes(slug)) return next();
@@ -387,9 +418,52 @@ app.get('/:slug', (req, res, next) => {
     const appData = apps.find(a => a.slug === slug);
 
     if (appData) {
-        // Se o app existe no banco, renderiza usando o template
-        // Nota: Você pode optar por servir o index.html gerado se preferir performance
         const appFilePath = path.join(APPS_DIR, slug, 'index.html');
+        const templateHtmlPath = path.join(TEMPLATES_DIR, 'base.html');
+        const templateCssPath = path.join(TEMPLATES_DIR, 'base.css');
+
+        const hasMinimumAppUi = (html) => {
+            if (typeof html !== 'string' || !html) return false;
+            return html.includes('id="download-btn"') && html.includes('data-target="android-section"');
+        };
+
+        const safeMtimeMs = (filePath) => {
+            try {
+                return fs.statSync(filePath).mtimeMs || 0;
+            } catch {
+                return 0;
+            }
+        };
+
+        const templateStamp = Math.max(safeMtimeMs(templateHtmlPath), safeMtimeMs(templateCssPath));
+        const generatorStamp = safeMtimeMs(__filename);
+        const pageStamp = safeMtimeMs(appFilePath);
+        const updatedAtStamp = (() => {
+            const raw = (appData.updatedAt || appData.createdAt || '').toString();
+            const parsed = Date.parse(raw);
+            return Number.isFinite(parsed) ? parsed : 0;
+        })();
+
+        let cachedHtml = '';
+        if (fs.existsSync(appFilePath)) {
+            try {
+                cachedHtml = await fs.readFile(appFilePath, 'utf-8');
+            } catch {}
+        }
+
+        const shouldRegenerate = !cachedHtml || !hasMinimumAppUi(cachedHtml) || templateStamp > pageStamp || generatorStamp > pageStamp || updatedAtStamp > pageStamp;
+
+        if (shouldRegenerate) {
+            try {
+                const html = await generateAppPage(appData);
+                if (typeof html === 'string' && html.trim()) {
+                    return res.send(html);
+                }
+            } catch (error) {
+                console.error('Erro ao gerar página do app:', error);
+            }
+        }
+
         if (fs.existsSync(appFilePath)) {
             return res.sendFile(appFilePath);
         }
@@ -600,8 +674,38 @@ app.post('/save', ensureAuthenticated, upload.fields([
         const slug = appData.slug || slugify(appData.name, { lower: true, strict: true });
         appData.slug = slug;
 
-        if (req.files['logo_file']) appData.logo = '/uploads/' + req.files['logo_file'][0].filename;
-        if (req.files['download_file']) appData.downloadUrl = '/uploads/' + req.files['download_file'][0].filename;
+        const pickPublicUrl = (value) => {
+            if (typeof value !== 'string') return '';
+            const trimmed = value.trim();
+            if (!trimmed) return '';
+            if (trimmed.startsWith('/uploads/')) return trimmed;
+            try {
+                const parsed = new URL(trimmed);
+                if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return trimmed;
+                return '';
+            } catch {
+                return '';
+            }
+        };
+
+        const typedLogoUrl = pickPublicUrl(req.body.logo_url);
+        const typedDownloadUrl = pickPublicUrl(req.body.download_url);
+        const existingLogo = pickPublicUrl(req.body.logo);
+        const existingDownloadUrl = pickPublicUrl(req.body.downloadUrl);
+
+        if (req.files['logo_file']) {
+            appData.logo = '/uploads/' + req.files['logo_file'][0].filename;
+        } else {
+            appData.logo = typedLogoUrl || existingLogo || '';
+        }
+
+        if (req.files['download_file']) {
+            appData.downloadUrl = '/uploads/' + req.files['download_file'][0].filename;
+        } else {
+            appData.downloadUrl = typedDownloadUrl || existingDownloadUrl || '';
+        }
+        delete appData.logo_url;
+        delete appData.download_url;
 
         // Compatibilidade de dispositivos (painel)
         const devicesField = req.body.devices;
@@ -740,38 +844,72 @@ app.get('/edit/:slug', ensureAuthenticated, (req, res) => {
     res.render('form', { app: appToEdit });
 });
 
-app.get('/delete/:slug', ensureAuthenticated, async (req, res) => {
+app.get('/delete/:slug', ensureAuthenticated, (req, res) => {
+    res.status(405).send('Método não permitido. Use o painel para confirmar a exclusão do app.');
+});
+
+app.post('/delete/:slug', ensureAuthenticated, async (req, res) => {
     try {
-        let apps = loadApps();
-        apps = apps.filter(a => a.slug !== req.params.slug);
-        saveApps(apps);
-        
-        // Remover diretório do app
-        const appDir = path.join(APPS_DIR, req.params.slug);
+        const slug = typeof req.params.slug === 'string' ? req.params.slug.trim() : '';
+        const confirmSlug = typeof req.body.confirmSlug === 'string' ? req.body.confirmSlug.trim() : '';
+        const confirmed = req.body.confirmed === 'true';
+
+        if (!slug) return res.status(400).send('Slug inválido.');
+
+        const apps = loadApps();
+        const existing = apps.find(a => a.slug === slug);
+        if (!existing) return res.status(404).send('App não encontrado.');
+
+        if (!confirmed || confirmSlug !== slug) {
+            return res.status(400).send('Confirmação inválida. Verifique o slug digitado e tente novamente.');
+        }
+
+        const nextApps = apps.filter(a => a.slug !== slug);
+        saveApps(nextApps);
+
+        const appDir = path.join(APPS_DIR, slug);
         if (fs.existsSync(appDir)) fs.removeSync(appDir);
-        
-        // RECONSTRUIR Home e Tutoriais para remover o app da lista
+
         await generateHomePage();
         await generateTutorialsPage();
-        
+
         res.redirect('/painel');
     } catch (error) {
         console.error('Erro ao excluir app:', error);
-        res.status(500).send("Erro ao excluir aplicativo.");
+        res.status(500).send('Erro ao excluir aplicativo.');
     }
 });
 
 app.get('/delete-image/:slug/:imgName', ensureAuthenticated, (req, res) => {
-    const { slug, imgName } = req.params;
-    const apps = loadApps();
-    const appIndex = apps.findIndex(a => a.slug === slug);
-    if (appIndex > -1) {
+    res.status(405).send('Método não permitido. Use o painel para confirmar a remoção da imagem.');
+});
+
+app.post('/delete-image/:slug/:imgName', ensureAuthenticated, async (req, res) => {
+    try {
+        const { slug, imgName } = req.params;
+        const confirmImgName = typeof req.body.confirmImgName === 'string' ? req.body.confirmImgName.trim() : '';
+        const confirmed = req.body.confirmed === 'true';
+
+        if (!confirmed || confirmImgName !== imgName) {
+            return res.status(400).send('Confirmação inválida. Verifique o nome do arquivo e tente novamente.');
+        }
+
+        const apps = loadApps();
+        const appIndex = apps.findIndex(a => a.slug === slug);
+        if (appIndex === -1) return res.status(404).send('App não encontrado.');
+
         const imgPath = `/uploads/${imgName}`;
-        apps[appIndex].interface_images = apps[appIndex].interface_images.filter(img => img !== imgPath);
-        fs.writeJsonSync(DATA_FILE, apps);
-        generateAppPage(apps[appIndex]);
+        const nextImages = (apps[appIndex].interface_images || []).filter(img => img !== imgPath);
+        apps[appIndex].interface_images = nextImages;
+
+        saveApps(apps);
+        await rebuildAll();
+
+        res.redirect(`/edit/${slug}`);
+    } catch (error) {
+        console.error('Erro ao excluir imagem:', error);
+        res.status(500).send('Erro ao excluir imagem.');
     }
-    res.redirect(`/edit/${slug}`);
 });
 
 // --- FUNÇÕES GERADORAS DE PÁGINAS ESTÁTICAS (SSG) ---
@@ -921,8 +1059,8 @@ async function generateAppPage(appData) {
     for (const dev of allDevices) {
         if (!devicesList.includes(dev)) {
             const sectionId = `${dev}-section`;
-            const buttonRegex = new RegExp(`<button[\\s\\S]*?data-target="${sectionId}"[\\s\\S]*?<\\/button>`, 'g');
-            const sectionRegex = new RegExp(`<section[\\s\\S]*?id="${sectionId}"[\\s\\S]*?<\\/section>`, 'g');
+            const buttonRegex = new RegExp(`<button\\b[^>]*\\bdata-target="${sectionId}"[^>]*>[\\s\\S]*?<\\/button>`, 'g');
+            const sectionRegex = new RegExp(`<section\\b[^>]*\\bid="${sectionId}"[^>]*>[\\s\\S]*?<\\/section>`, 'g');
             finalHtml = finalHtml.replace(buttonRegex, '');
             finalHtml = finalHtml.replace(sectionRegex, '');
         }
@@ -943,7 +1081,7 @@ async function generateAppPage(appData) {
                 videosHtml += `
                 <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
                     <div class="aspect-video bg-black flex items-center justify-center">
-                        <video controls preload="metadata" class="w-full h-full object-contain">
+                        <video controls preload="none" class="w-full h-full object-contain">
                             <source src="${tut.url}" type="video/mp4">
                         </video>
                     </div>
@@ -1034,6 +1172,7 @@ async function generateAppPage(appData) {
     await fs.ensureDir(appDir);
     await fs.writeFile(path.join(appDir, 'index.html'), finalHtml);
     await fs.writeFile(path.join(appDir, 'styles.css'), templateCss);
+    return finalHtml;
 }
 
 // --- INICIALIZAÇÃO DO SERVIDOR ---

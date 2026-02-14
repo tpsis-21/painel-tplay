@@ -159,7 +159,7 @@
                                     <div class="sm:col-span-3">
                                         <label class="text-xs font-medium text-muted-foreground">Passo a passo em texto</label>
                                         <p class="text-[11px] text-muted-foreground mb-1">Explique em detalhes cada etapa que o usuário deve seguir.</p>
-                                        <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TopPlay...\n3. Clique em Instalar."><%= tut.description || '' %></textarea>
+                                        <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TPlay...\n3. Clique em Instalar."><%= tut.description || '' %></textarea>
                                         <input type="hidden" name="tutorial_urls" value="">
                                         <input type="hidden" name="tutorial_is_video" value="false">
                                     </div>
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="sm:col-span-3">
                 <label class="text-xs font-medium text-muted-foreground">Passo a passo em texto</label>
                 <p class="text-[11px] text-muted-foreground mb-1">Crie um guia escrito independente, sem necessidade de vídeo.</p>
-                <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TopPlay...\n3. Clique em Instalar."></textarea>
+                <textarea name="tutorial_texts" rows="4" class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="1. Abra a loja de apps...\n2. Busque por TPlay...\n3. Clique em Instalar."></textarea>
                 <input type="hidden" name="tutorial_urls" value="">
                 <input type="hidden" name="tutorial_is_video" value="false">
             </div>
@@ -508,29 +508,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Lógica para remover imagens existentes
     window.confirmAndRemoveClosest = function(button, selector, message) {
-        const ok = window.confirm(message || 'Tem certeza?');
-        if (!ok) return;
-        const el = button && button.closest ? button.closest(selector || '.relative') : null;
-        if (el) el.remove();
+        if (!window.tplayConfirm) return;
+        window.tplayConfirm({
+            title: 'Confirmar remoção',
+            description: message || 'Tem certeza que deseja remover este item? Você precisa salvar para confirmar a exclusão.',
+            confirmText: 'Remover',
+            onConfirm: function () {
+                const el = button && button.closest ? button.closest(selector || '.relative') : null;
+                if (el) el.remove();
+            }
+        });
     }
 
     function removeImage(button, imageUrl, fileName) {
-        const ok = window.confirm('Remover esta imagem?\\n\\nVocê precisa salvar para confirmar a exclusão.');
-        if (!ok) return;
-        const imageDiv = button.closest('.existing-image');
-        if (imageDiv) {
-            imageDiv.style.display = 'none'; // Esconde a imagem
-            const deletedContainer = document.getElementById('deleted-images-container');
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'deleted_interface_images';
-            
-            // Sanitiza o nome do arquivo para evitar problemas com aspas
-            const safeFileName = fileName.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            hiddenInput.value = safeFileName;
-            
-            deletedContainer.appendChild(hiddenInput);
-        }
+        if (!window.tplayConfirm) return;
+        window.tplayConfirm({
+            title: 'Remover imagem',
+            description: 'Remover esta imagem? Você precisa salvar para confirmar a exclusão.',
+            confirmText: 'Remover',
+            onConfirm: function () {
+                const imageDiv = button.closest('.existing-image');
+                if (imageDiv) {
+                    imageDiv.style.display = 'none';
+                    const deletedContainer = document.getElementById('deleted-images-container');
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'deleted_interface_images';
+                    hiddenInput.value = String(fileName || '');
+                    deletedContainer.appendChild(hiddenInput);
+                }
+            }
+        });
     }
     window.removeImage = removeImage;
 });
