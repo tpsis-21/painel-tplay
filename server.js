@@ -658,6 +658,49 @@ app.get('/new', ensureAuthenticated, (req, res) => {
     res.render('form', { app: null });
 });
 
+function buildTutorialsFromPayload(appData, files) {
+    const tutorials = [];
+    const toArray = (value) => {
+        if (typeof value === 'undefined' || value === null) return [];
+        return Array.isArray(value) ? value : [value];
+    };
+    const titles = toArray(appData.tutorial_titles);
+    const urls = toArray(appData.tutorial_urls);
+    const texts = toArray(appData.tutorial_texts);
+    const icons = toArray(appData.tutorial_icons);
+    const isVideoFlags = toArray(appData.tutorial_is_video);
+    const videoFiles = files && files['video_tutorials'] ? files['video_tutorials'] : [];
+    const hasPayload = titles.length || urls.length || texts.length || isVideoFlags.length || videoFiles.length;
+    if (!hasPayload) return tutorials;
+    const maxLen = Math.max(
+        titles.length,
+        urls.length,
+        texts.length,
+        icons.length,
+        isVideoFlags.length,
+        videoFiles.length
+    );
+    for (let i = 0; i < maxLen; i++) {
+        const label = (titles[i] || '').trim();
+        const rawText = (texts[i] || '').trim();
+        let finalUrl = (urls[i] || '').trim();
+        if (videoFiles[i]) {
+            finalUrl = '/uploads/' + videoFiles[i].filename;
+        }
+        if (!finalUrl && !rawText) continue;
+        const explicitIsVideo = isVideoFlags[i] === 'true';
+        const autoIsVideo = finalUrl && (finalUrl.startsWith('/uploads/') || finalUrl.toLowerCase().endsWith('.mp4'));
+        tutorials.push({
+            title: label || (finalUrl ? 'Tutorial em vídeo' : 'Tutorial'),
+            url: finalUrl || '',
+            description: rawText || '',
+            icon: (icons[i] || '🎬'),
+            is_video: explicitIsVideo || autoIsVideo
+        });
+    }
+    return tutorials;
+}
+
 app.post('/save', ensureAuthenticated, upload.fields([
     { name: 'logo_file', maxCount: 1 },
     { name: 'download_file', maxCount: 1 },
@@ -788,34 +831,7 @@ app.post('/save', ensureAuthenticated, upload.fields([
         appData.interface_images = interfaceImages;
         appData.interface_image_names = interfaceImageNames;
 
-        const tutorials = [];
-        if (appData.tutorial_titles) {
-            const titles = Array.isArray(appData.tutorial_titles) ? appData.tutorial_titles : [appData.tutorial_titles];
-            const urls = Array.isArray(appData.tutorial_urls) ? appData.tutorial_urls : [appData.tutorial_urls];
-            const texts = Array.isArray(appData.tutorial_texts) ? appData.tutorial_texts : [appData.tutorial_texts];
-            const icons = Array.isArray(appData.tutorial_icons) ? appData.tutorial_icons : [appData.tutorial_icons];
-            const isVideoFlags = Array.isArray(appData.tutorial_is_video) ? appData.tutorial_is_video : [appData.tutorial_is_video];
-            
-            titles.forEach((title, i) => {
-                if (!title) return;
-                const rawText = (texts[i] || '').trim();
-                let finalUrl = urls[i] || '';
-                if (req.files['video_tutorials'] && req.files['video_tutorials'][i]) {
-                    finalUrl = '/uploads/' + req.files['video_tutorials'][i].filename;
-                }
-                if (!finalUrl && !rawText) return;
-                const explicitIsVideo = isVideoFlags[i] === 'true';
-                const autoIsVideo = finalUrl && (finalUrl.startsWith('/uploads/') || finalUrl.toLowerCase().endsWith('.mp4'));
-                tutorials.push({ 
-                    title, 
-                    url: finalUrl || '',
-                    description: rawText || '',
-                    icon: icons[i] || '🎬',
-                    is_video: explicitIsVideo || autoIsVideo
-                });
-            });
-        }
-        appData.tutorials = tutorials;
+        appData.tutorials = buildTutorialsFromPayload(appData, req.files);
 
         const index = apps.findIndex(a => a.slug === (appData.original_slug || slug));
         const nowIso = new Date().toISOString();
@@ -966,33 +982,167 @@ async function rebuildAll() {
     console.log('✨ Reconstrução concluída!');
 }
 
-async function generateAppPage(appData) {
-    const templateHtmlPath = path.join(TEMPLATES_DIR, 'base.html');
-    const templateCssPath = path.join(TEMPLATES_DIR, 'base.css');
-    let templateHtml = await fs.readFile(templateHtmlPath, 'utf-8');
-    let templateCss = await fs.readFile(templateCssPath, 'utf-8');
+function computeEmbedSrc(url) {
+    if (!url || !/^https?:\/\//i.test(url)) return '';
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.toLowerCase();
+        if (host.includes('youtube.com') || host.includes('youtu.be')) {
+            let videoId = '';
+            if (host.includes('youtu.be')) {
+                videoId = parsed.pathname.replace('/', '').split(/[?&#]/)[0];
+            } else {
+                videoId = parsed.searchParams.get('v') || '';
+            }
+            if (videoId) {
+                return `https://www.youtube.com/embed/${videoId}`;
+            }
+        } else if (host.includes('vimeo.com')) {
+            const parts = parsed.pathname.split('/').filter(Boolean);
+            const last = parts[parts.length - 1] || '';
+            if (last && /^\d+$/.test(last)) {
+                return `https://player.vimeo.com/video/${last}`;
+            }
+        }
+    } catch {
+        return '';
+    }
+    return '';
+}
 
-    const pageTitle = `${appData.name} - Loja TPlay | Download Oficial`;
+function buildTutorialSectionsHtml(tutorials) {
+    let videosHtml = '';
+    let linksHtml = '';
+    if (!Array.isArray(tutorials) || tutorials.length === 0) {
+        return { videosHtml, linksHtml };
+    }
+    tutorials.forEach((tut) => {
+        const title = (tut.title || '').trim();
+        const description = (tut.description || '').trim();
+        const url = (tut.url || '').trim();
+        const icon = tut.icon || '🎬';
+        const hasUrl = !!url;
+        const isLocalVideo = hasUrl && (
+            url.startsWith('/uploads/') ||
+            url.toLowerCase().endsWith('.mp4') ||
+            url.toLowerCase().endsWith('.webm') ||
+            url.toLowerCase().endsWith('.ogg')
+        );
+        const embedSrc = computeEmbedSrc(url);
 
-    let finalHtml = templateHtml
-        .replace(/{{app_name}}/g, appData.name)
-        .replace(/{{app_logo}}/g, appData.logo || '')
-        .replace(/{{download_url}}/g, appData.downloadUrl || '#')
-        .replace(/{{app_url}}/g, `${BASE_URL}/${appData.slug}`)
-        .replace(/{{android_code}}/g, appData.firestickCode || '2787533')
-        .replace(/{{firestick_code}}/g, appData.firestickCode || '2787533')
-        .replace(/{{tvbox_code}}/g, appData.tvboxCode || '51412')
-        .replace(/{{NtdownCode}}/g, appData.ntdownCode || appData.tvboxCode || '51412')
-        .replace(/{{page_title}}/g, pageTitle);
+        if (tut.is_video && isLocalVideo) {
+            videosHtml += `
+                <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+                    <div class="aspect-video bg-black flex items-center justify-center">
+                        <video controls preload="metadata" class="w-full h-full object-contain">
+                            <source src="${url}" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-medium text-card-foreground truncate">${title}</p>
+                        ${description ? `<p class="mt-1 text-xs text-muted-foreground line-clamp-2">${description}</p>` : ''}
+                    </div>
+                </div>`;
+        } else if (tut.is_video && hasUrl && embedSrc) {
+            videosHtml += `
+                <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+                    <div class="aspect-video bg-black">
+                        <iframe src="${embedSrc}" title="${title || 'Vídeo tutorial'}" loading="lazy" allowfullscreen class="w-full h-full border-0 rounded-none"></iframe>
+                    </div>
+                    <div class="p-3">
+                        <p class="text-sm font-medium text-card-foreground truncate">${title}</p>
+                        ${description ? `<p class="mt-1 text-xs text-muted-foreground line-clamp-2">${description}</p>` : ''}
+                    </div>
+                </div>`;
+        } else if (tut.is_video && hasUrl) {
+            videosHtml += `
+                <article class="w-full bg-card border border-border rounded-lg p-4 hover:bg-accent/40 transition-colors">
+                    <div class="flex items-start gap-3">
+                        <span class="text-lg mt-1" aria-hidden="true">${icon}</span>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-semibold text-card-foreground mb-1">${title}</h3>
+                            ${description ? `<p class="text-xs text-muted-foreground whitespace-pre-line mb-2">${description}</p>` : ''}
+                            <button type="button" onclick="window.open('${url}','_blank')" class="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline">
+                                <i class="fas fa-external-link-alt"></i>
+                                Assistir tutorial em nova aba
+                            </button>
+                        </div>
+                    </div>
+                </article>`;
+        } else {
+            if (!hasUrl && !description) {
+                return;
+            }
+            const fullText = description || '';
+            const maxPreviewLength = 160;
+            const hasMoreText = fullText.length > maxPreviewLength;
+            const previewText = hasMoreText ? `${fullText.slice(0, maxPreviewLength).trimEnd()}...` : fullText;
+            linksHtml += `
+                <article class="w-full bg-card border border-border rounded-lg p-4">
+                    <details class="group">
+                        <summary class="flex items-start gap-3 cursor-pointer list-none">
+                            <span class="text-lg mt-1" aria-hidden="true">${icon}</span>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-card-foreground mb-1">${title}</h3>
+                                ${fullText ? `<p class="text-xs text-muted-foreground mb-1">${previewText}</p>` : ''}
+                                ${hasMoreText ? `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-primary group-open:hidden">Clique para ler o guia completo<i class="fas fa-chevron-down text-[10px]"></i></span>` : ''}
+                                ${hasMoreText ? `<span class="hidden group-open:inline-flex items-center gap-1 text-[11px] font-medium text-primary">Ocultar guia completo<i class="fas fa-chevron-up text-[10px]"></i></span>` : ''}
+                                ${!hasMoreText && fullText ? `<span class="text-[11px] font-medium text-muted-foreground">Guia curto: leitura rápida</span>` : ''}
+                            </div>
+                        </summary>
+                        <div class="mt-3 pl-8 space-y-2">
+                            ${fullText ? `<div class="text-xs text-muted-foreground whitespace-pre-line">${fullText}</div>` : ''}
+                            ${hasUrl ? `
+                                <button type="button" onclick="window.open('${url}','_blank')" class="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Abrir link relacionado
+                                </button>
+                            ` : ''}
+                        </div>
+                    </details>
+                </article>`;
+        }
+    });
+    return { videosHtml, linksHtml };
+}
 
-    // Dispositivo padrão
+
+function buildDeviceSteps(appData) {
+    const deviceInstructions = appData && appData.deviceInstructions && typeof appData.deviceInstructions === 'object'
+        ? appData.deviceInstructions
+        : {};
+    const buildStepsHtml = (raw, fallbackLines) => {
+        const lines = (typeof raw === 'string' ? raw.split(/\r?\n/) : [])
+            .map(l => l.trim())
+            .filter(Boolean);
+        const finalLines = lines.length > 0 ? lines : (fallbackLines || []);
+        return finalLines.map((text, idx) => `
+            <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">${idx + 1}</span> ${text}</li>
+        `).join('');
+    };
+    const appName = appData.name || 'o aplicativo';
+    const defaultTvSteps = [
+        'Acesse a <strong>loja de aplicativos</strong> da sua TV',
+        `Procure por "<strong>${appName}</strong>"`,
+        'Clique em <strong>"Instalar"</strong>',
+        'Aguarde a instalação e abra o aplicativo'
+    ];
+    return {
+        samsung_steps: buildStepsHtml(deviceInstructions.samsung, defaultTvSteps),
+        lg_steps: buildStepsHtml(deviceInstructions.lg, defaultTvSteps),
+        roku_steps: buildStepsHtml(deviceInstructions.roku, defaultTvSteps),
+        pc_steps: buildStepsHtml(deviceInstructions.pc, [
+            'Instale um emulador Android confiável',
+            'Baixe o APK pelo navegador e abra no emulador',
+            'Conclua a instalação e abra o app'
+        ])
+    };
+}
+
+function buildAppPageView(appData) {
     const devicesList = Array.isArray(appData.compatibleDevices) && appData.compatibleDevices.length > 0
         ? appData.compatibleDevices
         : ['android','androidtv','firestick','tvbox'];
-    const defaultDeviceId = `${devicesList[0]}-section`;
-    finalHtml = finalHtml.replace(/{{default_device}}/g, defaultDeviceId);
-
-    // Texto de compatibilidade e descrição
     const labels = {
         android: 'Celular Android',
         androidtv: 'Android TV / Mi Stick',
@@ -1007,57 +1157,54 @@ async function generateAppPage(appData) {
     const compatText = compatItems.length > 1
         ? compatItems.slice(0, -1).join(', ') + ' e ' + compatItems.slice(-1)
         : (compatItems[0] || 'Android');
-
     const hasCustomDescription = !!(appData.description && appData.description.trim());
     const appDesc = hasCustomDescription ? appData.description.trim() : '';
     const metaDesc = hasCustomDescription ? appData.description.trim() : (appData.name || '');
-
-    finalHtml = finalHtml
-        .replace(/{{compat_text}}/g, compatText)
-        .replace(/{{app_description}}/g, appDesc)
-        .replace(/{{meta_description}}/g, metaDesc);
-
-    const deviceInstructions = appData && appData.deviceInstructions && typeof appData.deviceInstructions === 'object'
-        ? appData.deviceInstructions
-        : {};
-    const buildStepsHtml = (raw, fallbackLines) => {
-        const lines = (typeof raw === 'string' ? raw.split(/\r?\n/) : [])
-            .map(l => l.trim())
-            .filter(Boolean);
-        const finalLines = lines.length > 0 ? lines : (fallbackLines || []);
-        return finalLines.map((text, idx) => `
-            <li class="flex items-center"><span class="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs mr-3">${idx + 1}</span> ${text}</li>
-        `).join('');
+    const defaultDeviceId = `${devicesList[0]}-section`;
+    return {
+        devicesList,
+        compatText,
+        appDesc,
+        metaDesc,
+        defaultDeviceId
     };
-    finalHtml = finalHtml
-        .replace(/{{samsung_steps}}/g, buildStepsHtml(deviceInstructions.samsung, [
-            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
-            `Procure por "<strong>${appData.name}</strong>"`,
-            'Clique em <strong>"Instalar"</strong>',
-            'Aguarde a instalação e abra o aplicativo'
-        ]))
-        .replace(/{{lg_steps}}/g, buildStepsHtml(deviceInstructions.lg, [
-            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
-            `Procure por "<strong>${appData.name}</strong>"`,
-            'Clique em <strong>"Instalar"</strong>',
-            'Aguarde a instalação e abra o aplicativo'
-        ]))
-        .replace(/{{roku_steps}}/g, buildStepsHtml(deviceInstructions.roku, [
-            'Acesse a <strong>loja de aplicativos</strong> da sua TV',
-            `Procure por "<strong>${appData.name}</strong>"`,
-            'Clique em <strong>"Instalar"</strong>',
-            'Aguarde a instalação e abra o aplicativo'
-        ]))
-        .replace(/{{pc_steps}}/g, buildStepsHtml(deviceInstructions.pc, [
-            'Instale um emulador Android confiável',
-            'Baixe o APK pelo navegador e abra no emulador',
-            'Conclua a instalação e abra o app'
-        ]));
+}
 
-    // Remover botões/Seções de dispositivos não compatíveis
+async function generateAppPage(appData) {
+
+    const templateHtmlPath = path.join(TEMPLATES_DIR, 'base.html');
+    const templateCssPath = path.join(TEMPLATES_DIR, 'base.css');
+    let templateHtml = await fs.readFile(templateHtmlPath, 'utf-8');
+    let templateCss = await fs.readFile(templateCssPath, 'utf-8');
+
+    const pageTitle = `${appData.name} - Loja TPlay | Download Oficial`;
+    const view = buildAppPageView(appData);
+
+    let finalHtml = templateHtml
+        .replace(/{{app_name}}/g, appData.name)
+        .replace(/{{app_logo}}/g, appData.logo || '')
+        .replace(/{{download_url}}/g, appData.downloadUrl || '#')
+        .replace(/{{app_url}}/g, `${BASE_URL}/${appData.slug}`)
+        .replace(/{{android_code}}/g, appData.firestickCode || '2787533')
+        .replace(/{{firestick_code}}/g, appData.firestickCode || '2787533')
+        .replace(/{{tvbox_code}}/g, appData.tvboxCode || '51412')
+        .replace(/{{NtdownCode}}/g, appData.ntdownCode || appData.tvboxCode || '51412')
+        .replace(/{{page_title}}/g, pageTitle)
+        .replace(/{{default_device}}/g, view.defaultDeviceId)
+        .replace(/{{compat_text}}/g, view.compatText)
+        .replace(/{{app_description}}/g, view.appDesc)
+        .replace(/{{meta_description}}/g, view.metaDesc);
+
+    const deviceSteps = buildDeviceSteps(appData);
+    finalHtml = finalHtml
+        .replace(/{{samsung_steps}}/g, deviceSteps.samsung_steps)
+        .replace(/{{lg_steps}}/g, deviceSteps.lg_steps)
+        .replace(/{{roku_steps}}/g, deviceSteps.roku_steps)
+        .replace(/{{pc_steps}}/g, deviceSteps.pc_steps);
+
     const allDevices = ['android','androidtv','firestick','tvbox','samsung','lg','roku','pc'];
     for (const dev of allDevices) {
-        if (!devicesList.includes(dev)) {
+        if (!view.devicesList.includes(dev)) {
             const sectionId = `${dev}-section`;
             const buttonRegex = new RegExp(`<button\\b[^>]*\\bdata-target="${sectionId}"[^>]*>[\\s\\S]*?<\\/button>`, 'g');
             const sectionRegex = new RegExp(`<section\\b[^>]*\\bid="${sectionId}"[^>]*>[\\s\\S]*?<\\/section>`, 'g');
@@ -1073,47 +1220,12 @@ async function generateAppPage(appData) {
     const settings = loadSettings();
     const universal = settings && settings.universalTutorials ? settings.universalTutorials : {};
 
-    let videosHtml = '';
-    let linksHtml = '';
-    if (appData.tutorials && appData.tutorials.length > 0) {
-        appData.tutorials.forEach((tut) => {
-            if (tut.is_video) {
-                videosHtml += `
-                <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                    <div class="aspect-video bg-black flex items-center justify-center">
-                        <video controls preload="none" class="w-full h-full object-contain">
-                            <source src="${tut.url}" type="video/mp4">
-                        </video>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-sm font-medium text-card-foreground truncate">${tut.title}</p>
-                    </div>
-                </div>`;
-            } else {
-                linksHtml += `
-                <article class="w-full bg-card border border-border rounded-lg p-4 hover:bg-accent/40 transition-colors">
-                    <div class="flex items-start gap-3">
-                        <span class="text-lg mt-1" aria-hidden="true">${tut.icon}</span>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-semibold text-card-foreground mb-1">${tut.title}</h3>
-                            ${tut.description ? `<p class="text-xs text-muted-foreground whitespace-pre-line mb-2">${tut.description}</p>` : ''}
-                            ${tut.url ? `
-                                <button type="button" onclick="window.open('${tut.url}','_blank')" class="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    Abrir link relacionado
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                </article>`;
-            }
-        });
+    const tutorialSections = buildTutorialSectionsHtml(appData.tutorials || []);
+    if (tutorialSections.videosHtml) {
+        finalHtml = replaceContainerInner(finalHtml, 'video-grid', tutorialSections.videosHtml);
     }
-    if (videosHtml) {
-        finalHtml = replaceContainerInner(finalHtml, 'video-grid', videosHtml);
-    }
-    if (linksHtml) {
-        finalHtml = replaceContainerInner(finalHtml, 'links-grid', linksHtml);
+    if (tutorialSections.linksHtml) {
+        finalHtml = replaceContainerInner(finalHtml, 'links-grid', tutorialSections.linksHtml);
     } else {
         const textSectionRegex = /<section\s+id="text-guides-section"[\s\S]*?<\/section>/;
         finalHtml = finalHtml.replace(textSectionRegex, '');
