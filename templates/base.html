@@ -546,7 +546,7 @@
                 <!-- Tutoriais em vídeo -->
                 <section class="bg-card border border-border rounded-xl p-6 md:p-8">
                     <h2 class="text-2xl font-bold mb-6 text-card-foreground">🎥 Vídeos Tutoriais</h2>
-                    <div id="video-grid" class="space-y-4"></div>
+                    <div id="video-grid" class="grid gap-4 md:grid-cols-2"></div>
                 </section>
             </div>
             <!-- Guias em texto (seção separada) -->
@@ -768,8 +768,48 @@
             `).join('');
         }
 
+        function toggleTutorialPlayer(playerId) {
+            const container = document.getElementById('video-grid');
+            if (!container || !playerId) return;
+            const players = container.querySelectorAll('[data-tutorial-player]');
+            const buttons = container.querySelectorAll('[data-tutorial-open]');
+            let targetPlayer = null;
+            players.forEach(function (p) {
+                if (p.id === playerId) {
+                    targetPlayer = p;
+                } else {
+                    p.classList.add('hidden');
+                }
+            });
+            if (!targetPlayer) return;
+            const willOpen = targetPlayer.classList.contains('hidden');
+            if (willOpen) {
+                targetPlayer.classList.remove('hidden');
+            } else {
+                targetPlayer.classList.add('hidden');
+            }
+            buttons.forEach(function (btn) {
+                const isTarget = btn.getAttribute('data-player-id') === playerId;
+                btn.setAttribute('aria-expanded', isTarget && willOpen ? 'true' : 'false');
+            });
+        }
+
+        function initTutorialVideos() {
+            const container = document.getElementById('video-grid');
+            if (!container) return;
+            container.addEventListener('click', function (event) {
+                const target = event.target.closest('[data-tutorial-open]');
+                if (!target) return;
+                const playerId = target.getAttribute('data-player-id');
+                if (!playerId) return;
+                event.preventDefault();
+                toggleTutorialPlayer(playerId);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             initInterfaceImagesList();
+            initTutorialVideos();
             const prevBtn = document.getElementById('lightbox-prev');
             const nextBtn = document.getElementById('lightbox-next');
             const closeBtn = document.getElementById('lightbox-close');

@@ -1016,7 +1016,7 @@ function buildTutorialSectionsHtml(tutorials) {
     if (!Array.isArray(tutorials) || tutorials.length === 0) {
         return { videosHtml, linksHtml };
     }
-    tutorials.forEach((tut) => {
+    tutorials.forEach((tut, index) => {
         const title = (tut.title || '').trim();
         const description = (tut.description || '').trim();
         const url = (tut.url || '').trim();
@@ -1030,44 +1030,80 @@ function buildTutorialSectionsHtml(tutorials) {
         );
         const embedSrc = computeEmbedSrc(url);
 
-        if (tut.is_video && isLocalVideo) {
+        if (tut.is_video) {
+            const playerId = `tutorial-player-${index}`;
+            const fullText = description || '';
+            const maxPreviewLength = 140;
+            const hasMoreText = fullText.length > maxPreviewLength;
+            const previewText = hasMoreText ? `${fullText.slice(0, maxPreviewLength).trimEnd()}...` : fullText;
+            let thumbInner = '';
+            if (isLocalVideo) {
+                thumbInner = `
+                    <video class="w-full h-full object-cover" src="${url}" preload="metadata" muted playsinline></video>
+                `;
+            } else if (embedSrc) {
+                thumbInner = `
+                    <div class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center">
+                        <i class="fas fa-play text-white text-2xl"></i>
+                    </div>
+                `;
+            } else {
+                thumbInner = `
+                    <div class="w-full h-full bg-muted flex items-center justify-center">
+                        <i class="fas fa-link text-muted-foreground text-2xl"></i>
+                    </div>
+                `;
+            }
+            let playerContent = '';
+            if (isLocalVideo) {
+                playerContent = `
+                    <video controls preload="metadata" class="w-full h-full object-contain bg-black">
+                        <source src="${url}" type="video/mp4">
+                    </video>
+                `;
+            } else if (embedSrc) {
+                playerContent = `
+                    <iframe src="${embedSrc}" title="${title || 'Vídeo tutorial'}" loading="lazy" allowfullscreen class="w-full h-full border-0"></iframe>
+                `;
+            } else if (hasUrl) {
+                playerContent = `
+                    <div class="w-full h-full flex flex-col items-start justify-center gap-3 p-4 bg-card">
+                        ${fullText ? `<p class="text-sm text-muted-foreground whitespace-pre-line">${fullText}</p>` : ''}
+                        <button type="button" onclick="window.open('${url}','_blank')" class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+                            <i class="fas fa-external-link-alt"></i>
+                            Abrir tutorial em nova aba
+                        </button>
+                    </div>
+                `;
+            }
             videosHtml += `
-                <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                    <div class="aspect-video bg-black flex items-center justify-center">
-                        <video controls preload="metadata" class="w-full h-full object-contain">
-                            <source src="${url}" type="video/mp4">
-                        </video>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-sm font-medium text-card-foreground truncate">${title}</p>
-                        ${description ? `<p class="mt-1 text-xs text-muted-foreground line-clamp-2">${description}</p>` : ''}
-                    </div>
-                </div>`;
-        } else if (tut.is_video && hasUrl && embedSrc) {
-            videosHtml += `
-                <div class="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                    <div class="aspect-video bg-black">
-                        <iframe src="${embedSrc}" title="${title || 'Vídeo tutorial'}" loading="lazy" allowfullscreen class="w-full h-full border-0 rounded-none"></iframe>
-                    </div>
-                    <div class="p-3">
-                        <p class="text-sm font-medium text-card-foreground truncate">${title}</p>
-                        ${description ? `<p class="mt-1 text-xs text-muted-foreground line-clamp-2">${description}</p>` : ''}
-                    </div>
-                </div>`;
-        } else if (tut.is_video && hasUrl) {
-            videosHtml += `
-                <article class="w-full bg-card border border-border rounded-lg p-4 hover:bg-accent/40 transition-colors">
-                    <div class="flex items-start gap-3">
-                        <span class="text-lg mt-1" aria-hidden="true">${icon}</span>
+                <article class="w-full bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow" data-tutorial-card>
+                    <div class="flex items-start gap-4">
+                        <button type="button" class="relative flex-shrink-0 w-28 md:w-40 aspect-video rounded-md overflow-hidden bg-black/80 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-tutorial-open data-player-id="${playerId}" aria-label="${title ? `Assistir ${title}` : 'Assistir vídeo tutorial'}" aria-expanded="false">
+                            ${thumbInner}
+                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                            <span class="absolute inset-0 flex items-center justify-center">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg">
+                                    <i class="fas fa-play text-sm"></i>
+                                </span>
+                            </span>
+                        </button>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-semibold text-card-foreground mb-1">${title}</h3>
-                            ${description ? `<p class="text-xs text-muted-foreground whitespace-pre-line mb-2">${description}</p>` : ''}
-                            <button type="button" onclick="window.open('${url}','_blank')" class="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline">
-                                <i class="fas fa-external-link-alt"></i>
-                                Assistir tutorial em nova aba
+                            <h3 class="text-sm font-semibold text-card-foreground mb-1 truncate" title="${title}">${title}</h3>
+                            ${fullText ? `<p class="text-xs text-muted-foreground mb-2 ${hasMoreText ? 'line-clamp-2' : ''}">${previewText}</p>` : ''}
+                            <button type="button" class="inline-flex items-center gap-2 text-xs font-medium text-primary hover:underline" data-tutorial-open data-player-id="${playerId}" aria-expanded="false">
+                                <i class="fas fa-play-circle"></i>
+                                Assistir tutorial
                             </button>
                         </div>
                     </div>
+                    ${playerContent ? `
+                    <div id="${playerId}" class="mt-4 rounded-lg border border-border overflow-hidden bg-black hidden" data-tutorial-player>
+                        <div class="aspect-video w-full">
+                            ${playerContent}
+                        </div>
+                    </div>
+                    ` : ''}
                 </article>`;
         } else {
             if (!hasUrl && !description) {
