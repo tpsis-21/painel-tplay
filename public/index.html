@@ -319,14 +319,17 @@
             return v.toFixed(1) + ' ' + units[i];
         }
         async function baixarApp(e, url, name, slug) {
+            let btn = null;
+            let originalText = '';
+            let targetUrl = '';
             try {
                 e.preventDefault();
-                const btn = e.currentTarget;
-                const originalText = btn.textContent;
+                btn = e.currentTarget;
+                originalText = btn.textContent;
                 btn.textContent = 'Baixando...';
                 btn.setAttribute('aria-busy', 'true');
                 btn.classList.add('opacity-80','cursor-wait');
-                const targetUrl = url && url.length ? url : ('/' + slug);
+                targetUrl = url && url.length ? url : ('/' + slug);
                 if (!window.fetch || !('body' in Response.prototype)) {
                     const a = document.createElement('a');
                     a.href = targetUrl;
@@ -342,8 +345,8 @@
                     return false;
                 }
                 abrirDownloadModal(name);
-                downloadAbort = new AbortController();
-                const res = await fetch(targetUrl, { cache: 'no-store', signal: downloadAbort.signal });
+                downloadAbort = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                const res = await fetch(targetUrl, { cache: 'no-store', signal: downloadAbort ? downloadAbort.signal : undefined });
                 if (!res.ok || !res.body) {
                     const a = document.createElement('a');
                     a.href = targetUrl;
@@ -376,12 +379,27 @@
                 const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
                 atualizarProgresso(100, formatSize(total || blob.size));
                 finalizarDownload(blob, name ? `${name}.apk` : 'app.apk');
-                btn.textContent = originalText;
-                btn.removeAttribute('aria-busy');
-                btn.classList.remove('opacity-80','cursor-wait');
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.removeAttribute('aria-busy');
+                    btn.classList.remove('opacity-80','cursor-wait');
+                }
                 return false;
             } catch {
-                return true;
+                try {
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
+                    }
+                } catch {}
+                try {
+                    fecharDownloadModal();
+                } catch {}
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.removeAttribute('aria-busy');
+                    btn.classList.remove('opacity-80','cursor-wait');
+                }
+                return false;
             }
         }
  

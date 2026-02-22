@@ -325,7 +325,6 @@ app.set('views', VIEWS_DIR);
 app.set('trust proxy', 1);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(UPLOADS_DIR));
-app.use(express.static(PUBLIC_DIR));
 if (FORCE_HTTPS) {
     app.use((req, res, next) => {
         const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
@@ -407,6 +406,48 @@ app.post('/logout', (req, res) => {
 });
 
 // --- ROTAS DO SITE PÚBLICO ---
+
+app.get('/download/:slug', (req, res) => {
+    try {
+        const slug = typeof req.params.slug === 'string' ? req.params.slug.trim() : '';
+        if (!slug) return res.status(400).send('Slug inválido.');
+
+        const apps = loadApps();
+        const appData = apps.find(a => a.slug === slug);
+        if (!appData || !appData.downloadUrl) {
+            return res.status(404).send('Download não configurado para este app.');
+        }
+
+        const target = String(appData.downloadUrl || '').trim();
+        if (!target) {
+            return res.status(404).send('Download não configurado para este app.');
+        }
+
+        if (target.startsWith('/uploads/')) {
+            const relPath = target.replace(/^\//, '');
+            const filePath = path.join(PUBLIC_DIR, relPath);
+            const baseName = appData.name ? slugify(appData.name, { lower: true, strict: true }) : slug;
+            const fileName = `${baseName}.apk`;
+            return res.download(filePath, fileName, (err) => {
+                if (err) {
+                    console.error('Erro ao enviar arquivo para download:', err);
+                    if (!res.headersSent) {
+                        return res.redirect(target);
+                    }
+                }
+            });
+        }
+
+        if (/^https?:\/\//i.test(target)) {
+            return res.redirect(target);
+        }
+
+        return res.redirect(target);
+    } catch (error) {
+        console.error('Erro na rota de download:', error);
+        return res.status(500).send('Erro ao processar download.');
+    }
+});
 
 app.get('/:slug', async (req, res, next) => {
     const { slug } = req.params;
@@ -928,6 +969,8 @@ app.post('/delete-image/:slug/:imgName', ensureAuthenticated, async (req, res) =
     }
 });
 
+app.use(express.static(PUBLIC_DIR));
+
 // --- FUNÇÕES GERADORAS DE PÁGINAS ESTÁTICAS (SSG) ---
 
 async function generateHomePage() {
@@ -1220,6 +1263,7 @@ async function generateAppPage(appData) {
         .replace(/{{app_name}}/g, appData.name)
         .replace(/{{app_logo}}/g, appData.logo || '')
         .replace(/{{download_url}}/g, appData.downloadUrl || '#')
+        .replace(/{{app_slug}}/g, appData.slug || '')
         .replace(/{{app_url}}/g, `${BASE_URL}/${appData.slug}`)
         .replace(/{{android_code}}/g, appData.firestickCode || '2787533')
         .replace(/{{firestick_code}}/g, appData.firestickCode || '2787533')
