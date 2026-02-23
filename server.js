@@ -454,12 +454,13 @@ app.get('/:slug', async (req, res, next) => {
     const reserved = ['painel', 'tutorial', 'new', 'save', 'edit', 'delete', 'uploads', 'apps', 'delete-image', 'favicon.ico', 'login', 'logout'];
     if (reserved.includes(slug)) return next();
 
+    const appFilePath = path.join(APPS_DIR, slug, 'index.html');
+
     // Prioridade: Tenta achar o app no banco de dados e renderizar dinamicamente
     const apps = loadApps();
     const appData = apps.find(a => a.slug === slug);
 
     if (appData) {
-        const appFilePath = path.join(APPS_DIR, slug, 'index.html');
         const templateHtmlPath = path.join(TEMPLATES_DIR, 'base.html');
         const templateCssPath = path.join(TEMPLATES_DIR, 'base.css');
 
@@ -505,6 +506,10 @@ app.get('/:slug', async (req, res, next) => {
             }
         }
 
+        if (fs.existsSync(appFilePath)) {
+            return res.sendFile(appFilePath);
+        }
+    } else {
         if (fs.existsSync(appFilePath)) {
             return res.sendFile(appFilePath);
         }
