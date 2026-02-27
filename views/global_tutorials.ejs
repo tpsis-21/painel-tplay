@@ -86,7 +86,7 @@
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-muted-foreground">Ou enviar arquivo de vídeo</label>
-                                    <input type="file" name="files" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                                    <input type="file" name="file_<%= tut.id %>" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
                                     <% if (tut.url && tut.url.startsWith('/uploads/')) { %>
                                         <p class="mt-1 text-[11px] text-muted-foreground">
                                             Vídeo atual:
@@ -101,6 +101,7 @@
 
                     <input type="hidden" name="ids" value="<%= tut.id %>">
                     <input type="hidden" name="slugs" value="<%= tut.slug %>">
+                    <input type="hidden" name="rowKeys" value="<%= tut.id %>">
                 </div>
             <% }); } %>
         </div>
@@ -180,11 +181,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div>
                             <label class="text-xs font-medium text-muted-foreground">Ou enviar arquivo de vídeo</label>
-                            <input type="file" name="files" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
+                            <input type="file" name="file_${uniqueId}" class="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-accent file:cursor-pointer" accept="video/*">
                         </div>
                     </div>
                 </div>
             </div>
+            <input type="hidden" name="rowKeys" value="${uniqueId}">
         `;
         container.appendChild(div);
         bindToggleButtons(div);

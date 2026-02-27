@@ -644,7 +644,7 @@ app.post('/painel/config', ensureAuthenticated, upload.fields([
     }
 });
 
-app.post('/painel/tutorials', ensureAuthenticated, upload.array('files'), (req, res) => {
+app.post('/painel/tutorials', ensureAuthenticated, upload.any(), (req, res) => {
     try {
         const current = loadGlobalTutorials();
         const ids = Array.isArray(req.body.ids) ? req.body.ids : (req.body.ids ? [req.body.ids] : []);
@@ -652,11 +652,25 @@ app.post('/painel/tutorials', ensureAuthenticated, upload.array('files'), (req, 
         const titles = Array.isArray(req.body.titles) ? req.body.titles : (req.body.titles ? [req.body.titles] : []);
         const descriptions = Array.isArray(req.body.descriptions) ? req.body.descriptions : (req.body.descriptions ? [req.body.descriptions] : []);
         const urls = Array.isArray(req.body.urls) ? req.body.urls : (req.body.urls ? [req.body.urls] : []);
+        const rowKeys = Array.isArray(req.body.rowKeys) ? req.body.rowKeys : (req.body.rowKeys ? [req.body.rowKeys] : []);
 
         const files = req.files || [];
-        const byIndex = {};
-        files.forEach((f, idx) => {
-            byIndex[idx] = '/uploads/' + f.filename;
+        const fileByRowKey = {};
+        const legacyFiles = [];
+        files.forEach((f) => {
+            if (!f || typeof f !== 'object') return;
+            const field = typeof f.fieldname === 'string' ? f.fieldname : '';
+            if (!field) return;
+            if (field.startsWith('file_')) {
+                const key = field.slice('file_'.length);
+                if (key) {
+                    fileByRowKey[key] = '/uploads/' + f.filename;
+                }
+                return;
+            }
+            if (field === 'files') {
+                legacyFiles.push(f);
+            }
         });
 
         const existingById = {};
@@ -664,6 +678,7 @@ app.post('/painel/tutorials', ensureAuthenticated, upload.array('files'), (req, 
 
         const usedSlugs = current.map(t => t.slug);
         const nextList = [];
+        let legacyFileCursor = 0;
 
         titles.forEach((title, idx) => {
             if (!title) return;
@@ -671,10 +686,15 @@ app.post('/painel/tutorials', ensureAuthenticated, upload.array('files'), (req, 
             const base = existingById[id] || {};
             const description = (descriptions[idx] || '').trim();
             let url = (urls[idx] || '').trim();
-            if (byIndex[idx]) {
-                url = byIndex[idx];
+            const rowKey = String(rowKeys[idx] || id || '').trim();
+            const uploadedUrl = rowKey ? (fileByRowKey[rowKey] || '') : '';
+            if (uploadedUrl) {
+                url = uploadedUrl;
             } else if (!url && base.url) {
                 url = base.url;
+            } else if (!url && legacyFiles[legacyFileCursor]) {
+                url = '/uploads/' + legacyFiles[legacyFileCursor].filename;
+                legacyFileCursor += 1;
             }
 
             let slug = slugs[idx] || base.slug;
