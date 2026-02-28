@@ -308,12 +308,25 @@ const storage = multer.diskStorage({
         cb(null, UPLOADS_DIR);
     },
     filename: (req, file, cb) => {
-        const appName = req.body.name || 'app';
-        const appSlug = slugify(appName, { lower: true, strict: true });
-        const fieldName = file.fieldname.replace('_file', '').replace('_images', 'img').replace('video_tutorials', 'video');
-        const extension = path.extname(file.originalname);
-        const timestamp = Date.now().toString().slice(-6);
-        cb(null, `${appSlug}-${fieldName}-${timestamp}${extension}`);
+        const bodyName = typeof req.body.name === 'string'
+            ? req.body.name
+            : (Array.isArray(req.body.name) ? req.body.name[0] : '');
+        const appName = (bodyName || 'app').trim() || 'app';
+        const appSlug = slugify(appName, { lower: true, strict: true }) || 'app';
+
+        const rawFieldName = typeof file.fieldname === 'string' ? file.fieldname : 'file';
+        const normalizedFieldName = rawFieldName
+            .replace('_file', '')
+            .replace('_images', 'img')
+            .replace('video_tutorials', 'video');
+        const fieldName = slugify(normalizedFieldName, { lower: true, strict: true }) || 'file';
+
+        const originalName = typeof file.originalname === 'string' ? file.originalname : '';
+        const rawExtension = path.extname(originalName).toLowerCase();
+        const extension = /^\.[a-z0-9]+$/.test(rawExtension) ? rawExtension : '';
+
+        const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+        cb(null, `${appSlug}-${fieldName}-${uniqueSuffix}${extension}`);
     }
 });
 const upload = multer({ storage: storage });
